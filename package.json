@@ -26,6 +26,19 @@
     "docs",
     "examples",
     "skills",
-    "scripts"
-  ]
+    "scripts",
+    "LICENSE",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/claw-ad-creative.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/claw-ad-creative/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/claw-ad-creative#readme"
 }
