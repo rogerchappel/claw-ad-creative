@@ -1,5 +1,5 @@
 {
-  "projectType": "node-cli",
+  "projectType": "docs",
   "packageManagers": [
     "npm",
     "github-release"
