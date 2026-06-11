@@ -1,0 +1,3 @@
+display_name: Facebook Ad Creative
+short_description: Research Meta ads, build creative concepts, generate assets, and report performance safely.
+default_prompt: Use the facebook-ad-creative skill to research competitor ads, create original Meta ad concepts, generate asset prompts, and return an approval-ready creative pack with safety gates.

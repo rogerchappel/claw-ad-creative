@@ -1,28 +1,73 @@
 # claw-ad-creative
 
-Open agent playbook for Meta ad research, creative asset generation, and safe ad ops reporting.
+Open agent playbook for researching Meta ads, generating ad assets, and safely
+turning approved creative into draft campaigns and performance reports.
 
-## Status
+The repository is intentionally docs-first. It helps teams wire an agentic ad
+creative workflow without giving the agent uncontrolled access to an ad account
+or budget.
 
-This repository is early-stage. Confirm the current support, release, and
-security posture before using it in production.
+## What It Covers
 
-## Install
+- Competitor research with Meta/Facebook Ads Library data.
+- Creative strategy from the perspective of a Facebook performance marketer.
+- Static and video asset generation with tools such as fal.ai and Higgsfield.
+- Approval gates before campaign creation, publishing, spend changes, or edits
+  to live ads.
+- Reporting loops for spend, CTR, CPC, CPM, conversion rate, winners, losers,
+  and next tests.
+- A reusable Codex/OpenClaw skill in `skills/facebook-ad-creative`.
 
-Replace this section with the generated repository's installation steps.
+## Recommended Agent Stack
 
-```sh
-pnpm install
+Start with a creative intelligence agent that can research and generate assets:
+
+- Read-only Ads Library MCP or browser-backed Ads Library workflow.
+- fal.ai MCP for image/video model discovery, schemas, pricing, and inference.
+- Optional Higgsfield MCP for polished short-form video concepts.
+- No Meta Ads write access in the creative agent.
+
+Add an ad ops/reporting agent later:
+
+- Meta Ads MCP or Marketing API access.
+- Draft-only creation by default.
+- Read access for performance reporting.
+- Explicit human approval before publish, budget changes, live edits, or
+  campaign deletion.
+
+See `docs/architecture.md` and `docs/mcp-installation.md`.
+
+## Skill
+
+The included skill is designed to be copied or packaged into an agent runtime:
+
+```text
+skills/facebook-ad-creative/
 ```
 
-## Use
+It tells an agent how to:
 
-Replace this section with the smallest useful example for the generated
-repository.
+- research active competitor ads,
+- extract hooks and creative patterns,
+- build platform-native ad concepts,
+- generate image/video prompt packs,
+- produce approval-ready creative batches,
+- create draft-only ad plans, and
+- report campaign performance clearly.
 
-```sh
-pnpm dev
-```
+The skill keeps `SKILL.md` lean and stores deeper guidance in `references/`.
+
+## Safety Defaults
+
+Agents using this workflow should never:
+
+- publish ads without explicit human approval,
+- increase spend or budget without approval,
+- edit live ads without approval,
+- delete campaigns, ad sets, ads, pixels, audiences, or assets,
+- impersonate a brand or competitor,
+- scrape private data,
+- make unsupported performance claims.
 
 ## Verify
 
@@ -32,19 +77,15 @@ Run the local validation script before opening a pull request:
 bash scripts/validate.sh
 ```
 
-`scripts/validate.sh` runs the repository's standard local checks when they are defined and will also run `agent-qc ready` when `agent-qc` is installed. Missing `agent-qc` is treated as a skip, not a failure.
+## Repository Map
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution expectations. Changes
-should be small, reviewable, and verified before review.
-
-## Security
-
-See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance. Replace
-the default security policy before publishing the generated repository.
-
-These links assume this README has been copied to the generated repository root.
+- `docs/architecture.md` - two-agent model and safety boundaries.
+- `docs/mcp-installation.md` - MCP choices, credential notes, and scope.
+- `docs/workflow.md` - end-to-end research, asset, approval, launch, report loop.
+- `docs/report-template.md` - concise performance report format.
+- `examples/catalogue-viewer-brief.md` - example brief for a horse catalogue app.
+- `examples/openclaw-agent-config.md` - example runtime/tool scoping notes.
+- `skills/facebook-ad-creative/` - reusable agent skill.
 
 ## License
 

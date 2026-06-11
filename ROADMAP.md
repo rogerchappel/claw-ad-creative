@@ -1,38 +1,24 @@
 # Roadmap
 
-This roadmap describes intended direction, not a binding delivery promise.
-Review it regularly and update it as the project learns from users,
-contributors, and implementation constraints.
+## 0.1
 
-## Now
-
-- Define the smallest useful project scope.
-- Keep repository setup, documentation, and verification easy for contributors
-  to follow.
-- Ship small, reviewable improvements.
+- Docs-first architecture for creative and ad ops agents.
+- MCP installation and scoping notes.
+- Reusable Facebook ad creative skill.
+- Example Catalogue Viewer brief.
+- Validation for required docs and skill files.
 
 ## Next
 
-- Add the next capabilities that directly support the project's primary users.
-- Improve tests, docs, and examples around the most used workflows.
-- Reduce setup friction discovered during early use.
+- Add example approval pack output.
+- Add example ad performance report output.
+- Add model comparison notes for fal.ai video/image workflows.
+- Add a privacy checklist for teams using customer data in ad creation.
+- Add optional packaging instructions for installing the skill into common agent
+  runtimes.
 
 ## Later
 
-- Consider larger features after the core workflow is stable.
-- Add automation only where it removes repeated maintainer work.
-- Revisit packaging, deployment, or integration options based on real demand.
-
-## Not Planned
-
-- Unrelated platform rewrites without a clear migration path.
-- Mandatory dependencies on a single ecosystem unless the project requires it.
-- Public release dates before maintainers are ready to commit to them.
-
-## Roadmap Review
-
-Before each major or meaningful minor release:
-
-- Move completed user-visible work into `CHANGELOG.md`.
-- Remove stale commitments.
-- Promote only the next reviewable set of work into `Now`.
+- Add connector-specific guides when stable MCP server choices emerge.
+- Add test fixtures for generated creative packs.
+- Add a small CLI only if repeated docs validation or packaging work warrants it.

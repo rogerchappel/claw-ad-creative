@@ -1,13 +1,12 @@
-# claw-ad-creative Documentation
+# Documentation
 
-This directory holds project documentation.
+Use these files to set up and operate an agentic ad creative workflow:
 
-## Contents
+- `architecture.md` - agent roles, permissions, and approval gates.
+- `mcp-installation.md` - MCP server choices and credential boundaries.
+- `workflow.md` - research-to-report operating loop.
+- `report-template.md` - performance report structure.
 
-- [Contributing guide](../CONTRIBUTING.md)
-- [Security policy](../SECURITY.md)
-- [Agent instructions](../AGENTS.md)
-
-## Additional docs
-
-For a hosted documentation site, see the `docs-site/` directory if present.
+The public docs avoid platform secrets and account-specific IDs. Keep private
+MCP endpoints, API keys, ad account IDs, pixels, audiences, and campaign IDs in
+your own runtime configuration, not in this repository.

@@ -5,10 +5,10 @@ This file defines how AI agents and human maintainers should work in `claw-ad-cr
 ## Project Context
 
 - Project: `claw-ad-creative`
-- Repository: ``
-- Primary maintainer: ``
-- Default branch: ``
-- Package manager: ``
+- Repository: `https://github.com/rogerchappel/claw-ad-creative`
+- Primary maintainer: `Roger Chappel`
+- Default branch: `main`
+- Package manager: `npm`
 - Primary verification command: `bash scripts/validate.sh`
 
 ## Core Principle
@@ -173,4 +173,11 @@ Never commit secrets. Never mutate production data unless explicitly instructed.
 
 ## Repository-Specific Notes
 
-
+- This is a docs-first repository with a reusable skill under
+  `skills/facebook-ad-creative`.
+- Do not add real API keys, ad account IDs, pixel IDs, customer lists, audience
+  exports, campaign IDs, or generated private client assets.
+- Treat Meta Ads publishing, budget changes, live edits, audience changes, and
+  deletion as approval-gated operations in every example.
+- Keep `SKILL.md` concise. Put detailed operating guidance in
+  `skills/facebook-ad-creative/references/`.

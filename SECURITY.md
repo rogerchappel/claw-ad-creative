@@ -1,57 +1,49 @@
 # Security Policy
 
-## Supported Versions
-
-Replace this section with the supported versions for `claw-ad-creative`.
-
-Example:
-
-```md
-| Version | Supported |
-| --- | --- |
-| .x | Yes |
-| < .0 | No |
-```
-
-If the project does not publish versioned releases yet, say that clearly.
+This repository is docs-first, but it describes workflows that can touch ad
+accounts, generated assets, budgets, and customer data. Treat examples and
+contributions with the same care you would apply to automation code.
 
 ## Reporting a Vulnerability
 
-Please do not report suspected vulnerabilities in public issues, pull requests, or discussions.
+Please do not report suspected vulnerabilities in public issues, pull requests,
+or discussions.
 
 Ask maintainers for the private security reporting path before sharing details.
+If no private reporting path exists yet, ask maintainers through public project
+channels for a private reporting path. Do not include exploit details, secrets,
+personal data, or sensitive technical details in public messages.
 
-If no private reporting path exists yet, ask maintainers through public project channels for a private reporting path. Do not include exploit details, secrets, personal data, or sensitive technical details in public messages.
+## Sensitive Data
 
-## What to Include
+Do not commit:
 
-When a private reporting path is available, include:
+- API keys or MCP credentials,
+- Meta ad account IDs,
+- pixel IDs,
+- access tokens,
+- customer lists,
+- custom audience exports,
+- unpublished campaign plans,
+- private generated assets,
+- client confidential information.
 
-- A clear description of the issue.
-- Affected versions, files, packages, workflows, or configuration.
-- Steps to reproduce, proof of concept, or attack scenario when safe to share.
-- Potential impact.
-- Suggested mitigation, if known.
-
-## Response Expectations
-
-Maintainers review good-faith reports as capacity allows.
-
-Do not imply paid support, guaranteed response times, guaranteed fixes, or service-level agreements unless `claw-ad-creative` explicitly provides them.
+Use placeholders in examples.
 
 ## Scope
 
 In scope:
 
-- Vulnerabilities in claw-ad-creative.
-- Insecure default configuration shipped by this project.
+- insecure default guidance shipped by this project,
+- examples that encourage unsafe ad-account permissions,
+- skill instructions that could cause unauthorized spend or publishing,
 - CI, release, or dependency guidance maintained by this project.
 
 Out of scope:
 
-- General support requests.
-- Requests for guaranteed maintenance timelines.
-- Issues in unrelated downstream projects.
+- general support requests,
+- requests for guaranteed maintenance timelines,
+- issues in unrelated downstream projects or third-party MCP servers.
 
 ## Disclosure
 

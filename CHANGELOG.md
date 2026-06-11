@@ -1,21 +1,9 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## Unreleased
 
-This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
-format and uses semantic versioning when versioned releases are published.
-
-## [Unreleased]
-
-### Added
-
-- Initial project setup.
-
-## Release Links
-
-- Unreleased:
-  `https://github.com/rogerchappel/claw-ad-creative/compare/...HEAD`
-- Latest release:
-  `https://github.com/rogerchappel/claw-ad-creative/releases/latest`
-
-Replace placeholder links once the first release tag exists.
+- Added the initial docs-first ad creative workflow.
+- Added MCP installation and permission scoping notes.
+- Added the reusable `facebook-ad-creative` skill.
+- Added an example Catalogue Viewer brief.
+- Added documentation validation.
