@@ -1,0 +1,205 @@
+{
+  "name": "Facebook Ad Creative",
+  "slug": "facebook-ad-creative",
+  "description": "Research Meta ads, generate creative assets, prepare safe ad drafts, and report performance.",
+  "source": "github",
+  "version": "0.2.0",
+  "sourceUrl": "https://github.com/rogerchappel/claw-ad-creative",
+  "metadata": {
+    "version": 1,
+    "kind": "agent-skill",
+    "category": "advertising",
+    "icon": "ads",
+    "reviewSafeByDefault": true,
+    "supportsScripts": true,
+    "capabilities": [
+      "ads-library:research",
+      "creative:strategy",
+      "assets:generate",
+      "meta-ads:draft",
+      "meta-ads:report"
+    ],
+    "roles": {
+      "creativeIntelligence": {
+        "purpose": "Research competitor ads, generate creative angles, and create approval packs.",
+        "defaultToolAccess": "read-and-generate",
+        "blockedByDefault": [
+          "meta.ads.publish",
+          "meta.ads.budget.update",
+          "meta.ads.live.edit",
+          "meta.ads.delete"
+        ]
+      },
+      "adOpsReporting": {
+        "purpose": "Create approved paused drafts and report campaign performance.",
+        "defaultToolAccess": "read-only-reporting",
+        "requiresApproval": [
+          "meta.ads.ad.create",
+          "meta.ads.campaign.create",
+          "meta.ads.publish",
+          "meta.ads.budget.update",
+          "meta.ads.live.edit",
+          "meta.ads.delete"
+        ]
+      }
+    },
+    "openclaw": {
+      "requires": {
+        "bins": [
+          "node",
+          "npx"
+        ],
+        "env": [
+          "FAL_KEY"
+        ],
+        "optionalEnv": [
+          "ADS_LIBRARY_API_KEY",
+          "ADS_LIBRARY_PROVIDER",
+          "META_ACCESS_TOKEN",
+          "META_AD_ACCOUNT_ID"
+        ]
+      },
+      "recommendedMcpServers": [
+        {
+          "name": "fal",
+          "role": "asset-generation",
+          "env": [
+            "FAL_KEY"
+          ],
+          "required": true
+        },
+        {
+          "name": "facebook-ads-library",
+          "role": "competitor-research",
+          "env": [
+            "ADS_LIBRARY_API_KEY"
+          ],
+          "required": false
+        },
+        {
+          "name": "higgsfield",
+          "role": "premium-video-generation",
+          "required": false
+        },
+        {
+          "name": "meta-ads",
+          "role": "draft-ad-ops-and-reporting",
+          "env": [
+            "META_ACCESS_TOKEN",
+            "META_AD_ACCOUNT_ID"
+          ],
+          "required": false,
+          "safety": "Use only with approval gates and paused/draft defaults."
+        }
+      ]
+    },
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "falSecretRef": {
+          "type": "object",
+          "title": "fal.ai API key",
+          "description": "CrewCMD/OpenClaw vault secret reference to expose as FAL_KEY.",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Secret name"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        "adsLibrarySecretRef": {
+          "type": "object",
+          "title": "Ads Library provider key",
+          "description": "Optional vault secret reference for a hosted Ads Library provider.",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Secret name"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        "higgsfieldEnabled": {
+          "type": "boolean",
+          "title": "Use Higgsfield MCP",
+          "description": "Higgsfield's public MCP uses account authentication through the connector rather than a copied API key.",
+          "default": false
+        },
+        "metaSecretRef": {
+          "type": "object",
+          "title": "Meta Ads token",
+          "description": "Optional vault secret reference for ad ops/reporting. Keep disabled until ready.",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Secret name"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        "adsLibraryProvider": {
+          "type": "string",
+          "title": "Ads Library provider",
+          "default": "browser-or-scraper",
+          "enum": [
+            "browser-or-scraper",
+            "apify",
+            "scrapecreators",
+            "trypeggy",
+            "custom"
+          ]
+        },
+        "defaultMarket": {
+          "type": "string",
+          "title": "Default market",
+          "default": "AU"
+        },
+        "defaultBrand": {
+          "type": "string",
+          "title": "Default brand"
+        },
+        "canCreatePausedAds": {
+          "type": "boolean",
+          "title": "Allow paused ad creation",
+          "default": false
+        },
+        "canPublishAds": {
+          "type": "boolean",
+          "title": "Allow publishing ads",
+          "default": false,
+          "description": "Leave false unless you deliberately want live ad ops automation."
+        },
+        "canChangeBudget": {
+          "type": "boolean",
+          "title": "Allow budget changes",
+          "default": false
+        }
+      },
+      "required": [
+        "falSecretRef"
+      ]
+    },
+    "configExample": {
+      "falSecretRef": {
+        "name": "fal-api-key"
+      },
+      "adsLibraryProvider": "browser-or-scraper",
+      "defaultMarket": "AU",
+      "defaultBrand": "Catalogue Viewer",
+      "canCreatePausedAds": false,
+      "canPublishAds": false,
+      "canChangeBudget": false
+    }
+  }
+}

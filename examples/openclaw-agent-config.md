@@ -3,6 +3,13 @@
 These examples are descriptive, not a drop-in config. Use your runtime's real
 tool names and secret handling.
 
+For a CrewCMD/OpenClaw installable skill config schema, see
+`skills/facebook-ad-creative/skill.json`. For generated starter snippets, run:
+
+```sh
+bash scripts/install-mcps.sh print-config
+```
+
 ## Creative Agent
 
 Name: `pixel`

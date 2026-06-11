@@ -19,6 +19,24 @@ Think like a senior Facebook performance marketer:
 - make the next test obvious,
 - protect spend and brand trust with approval gates.
 
+## Runtime Contract
+
+When installed through CrewCMD/OpenClaw, read assignment policy from
+`skills.entries.facebook-ad-creative.config` or the runtime's equivalent skill
+config surface. The companion `skill.json` defines the UI schema.
+
+Expected vault-backed environment variables:
+
+- `FAL_KEY` for fal.ai asset generation,
+- `ADS_LIBRARY_API_KEY` for optional hosted Ads Library research,
+- `META_ACCESS_TOKEN` and `META_AD_ACCOUNT_ID` for optional ad ops/reporting.
+
+Higgsfield's hosted MCP uses connector/account authentication; use
+`higgsfieldEnabled` as a policy flag when the runtime exposes that connector.
+
+If `canCreatePausedAds`, `canPublishAds`, or `canChangeBudget` are absent, treat
+them as `false`.
+
 ## Safety Gates
 
 Never publish ads, increase budget, edit live ads, delete ad-account objects, or

@@ -1,12 +1,14 @@
 {
   "name": "claw-ad-creative",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Open agent playbook for Meta ad research, creative asset generation, and safe ad ops reporting.",
   "type": "module",
   "private": false,
   "scripts": {
     "check": "node scripts/check-docs.mjs",
     "test": "node scripts/check-docs.mjs",
+    "setup:check": "bash scripts/install-mcps.sh check",
+    "setup:print-config": "bash scripts/install-mcps.sh print-config",
     "release:check": "npm run check && npm pack --dry-run"
   },
   "keywords": [

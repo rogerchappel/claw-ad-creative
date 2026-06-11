@@ -4,13 +4,16 @@ import path from 'node:path';
 const root = process.cwd();
 const required = [
   'README.md',
+  'manifest.json',
   'docs/architecture.md',
+  'docs/crewcmd-installation.md',
   'docs/mcp-installation.md',
   'docs/workflow.md',
   'docs/report-template.md',
   'examples/catalogue-viewer-brief.md',
   'examples/openclaw-agent-config.md',
   'skills/facebook-ad-creative/SKILL.md',
+  'skills/facebook-ad-creative/skill.json',
   'skills/facebook-ad-creative/references/research.md',
   'skills/facebook-ad-creative/references/creative-strategy.md',
   'skills/facebook-ad-creative/references/asset-generation.md',
@@ -48,6 +51,31 @@ for (const file of listMarkdown(root)) {
   }
 }
 
+for (const file of ['manifest.json', 'skills/facebook-ad-creative/skill.json']) {
+  try {
+    JSON.parse(readFileSync(path.join(root, file), 'utf8'));
+  } catch (error) {
+    failures.push(`invalid JSON in ${file}: ${error.message}`);
+  }
+}
+
+const manifest = readJson('manifest.json');
+const skillJson = readJson('skills/facebook-ad-creative/skill.json');
+
+if (manifest && skillJson) {
+  if (manifest.slug !== skillJson.slug) {
+    failures.push('manifest slug does not match skill.json slug');
+  }
+
+  if (!skillJson.metadata?.configSchema?.properties?.falSecretRef) {
+    failures.push('skill.json missing falSecretRef config schema');
+  }
+
+  if (skillJson.metadata?.configExample?.canPublishAds !== false) {
+    failures.push('skill config example must keep canPublishAds false');
+  }
+}
+
 if (failures.length > 0) {
   for (const failure of failures) {
     console.error(`FAIL: ${failure}`);
@@ -69,5 +97,13 @@ function* listMarkdown(dir) {
     } else if (entry.endsWith('.md')) {
       yield fullPath;
     }
+  }
+}
+
+function readJson(file) {
+  try {
+    return JSON.parse(readFileSync(path.join(root, file), 'utf8'));
+  } catch {
+    return null;
   }
 }

@@ -46,8 +46,13 @@ Expected secret:
 FAL_KEY=...
 ```
 
+When running through CrewCMD/OpenClaw, store this as a vault secret and expose it
+through the skill assignment config rather than committing it to a local env
+file. See `docs/crewcmd-installation.md`.
+
 Use Higgsfield when the campaign needs polished short-form video or realistic
-UGC-style motion.
+UGC-style motion. Higgsfield's hosted MCP is URL/account-auth based; connect the
+server and sign in through the MCP client.
 
 ## Meta Ads Account Actions
 
@@ -104,3 +109,15 @@ requires_approval:
 ```
 
 Use your runtime's real tool names. The names above are illustrative.
+
+## Setup Script
+
+This repo includes a conservative helper script:
+
+```sh
+bash scripts/install-mcps.sh check
+bash scripts/install-mcps.sh print-config
+```
+
+It checks local prerequisites and prints starter config snippets. It does not
+write secrets or mutate runtime config automatically.

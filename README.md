@@ -17,6 +17,8 @@ or budget.
 - Reporting loops for spend, CTR, CPC, CPM, conversion rate, winners, losers,
   and next tests.
 - A reusable Codex/OpenClaw skill in `skills/facebook-ad-creative`.
+- CrewCMD/OpenClaw library metadata, config schema, and vault-first setup
+  instructions.
 
 ## Recommended Agent Stack
 
@@ -56,6 +58,35 @@ It tells an agent how to:
 - report campaign performance clearly.
 
 The skill keeps `SKILL.md` lean and stores deeper guidance in `references/`.
+`skills/facebook-ad-creative/skill.json` adds the CrewCMD-style install
+metadata and config schema so vault-backed secret references can be collected in
+the UI instead of pasted into prompts or config files.
+
+For installable setup details, see `docs/crewcmd-installation.md`.
+
+## Install Setup
+
+Check local prerequisites:
+
+```sh
+bash scripts/install-mcps.sh check
+```
+
+Print starter OpenClaw and CrewCMD config snippets:
+
+```sh
+bash scripts/install-mcps.sh print-config
+```
+
+Required vault secret for asset generation:
+
+- `fal-api-key` exposed as `FAL_KEY`
+
+Optional vault secrets:
+
+- `ads-library-api-key` for a hosted Ads Library provider
+- Higgsfield connector/account auth for premium video generation
+- `meta-ads-access-token` and `meta-ad-account-id` for ad ops/reporting
 
 ## Safety Defaults
 
@@ -80,12 +111,14 @@ bash scripts/validate.sh
 ## Repository Map
 
 - `docs/architecture.md` - two-agent model and safety boundaries.
+- `docs/crewcmd-installation.md` - installable skill, vault, and MCP setup.
 - `docs/mcp-installation.md` - MCP choices, credential notes, and scope.
 - `docs/workflow.md` - end-to-end research, asset, approval, launch, report loop.
 - `docs/report-template.md` - concise performance report format.
 - `examples/catalogue-viewer-brief.md` - example brief for a horse catalogue app.
 - `examples/openclaw-agent-config.md` - example runtime/tool scoping notes.
 - `skills/facebook-ad-creative/` - reusable agent skill.
+- `manifest.json` - package-level skill library metadata.
 
 ## License
 

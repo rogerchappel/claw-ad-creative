@@ -1,0 +1,28 @@
+{
+  "name": "Facebook Ad Creative",
+  "slug": "facebook-ad-creative",
+  "description": "Research Meta ads, generate creative assets, prepare safe ad drafts, and report performance.",
+  "version": "0.2.0",
+  "source": "github",
+  "sourceUrl": "https://github.com/rogerchappel/claw-ad-creative",
+  "skillPath": "skills/facebook-ad-creative",
+  "supportsScripts": true,
+  "assets": [
+    {
+      "path": "skills/facebook-ad-creative/SKILL.md",
+      "kind": "skill-md"
+    },
+    {
+      "path": "skills/facebook-ad-creative/skill.json",
+      "kind": "config"
+    },
+    {
+      "path": "scripts/install-mcps.sh",
+      "kind": "script"
+    },
+    {
+      "path": "scripts/print-openclaw-config.mjs",
+      "kind": "script"
+    }
+  ]
+}
