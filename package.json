@@ -7,6 +7,7 @@
   "scripts": {
     "check": "node scripts/check-docs.mjs",
     "test": "node scripts/check-docs.mjs",
+    "creative:batch": "node scripts/create-ad-batch.mjs",
     "creative:device-prompt": "node scripts/create-device-creative-prompt.mjs",
     "setup:check": "bash scripts/install-mcps.sh check",
     "setup:print-config": "bash scripts/install-mcps.sh print-config",
