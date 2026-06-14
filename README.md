@@ -138,10 +138,12 @@ The command writes:
 - `insight-brief.json` - pain points, outcomes, objections, proof points, and
   headline/body copy rules.
 - `scale-plan.json` - creative families, audience segments, ad-set strategy,
-  scaling rules, and draft ad-set structure.
+  creative styles, scaling rules, and draft ad-set structure.
 - `copy-matrix.csv` - headline, primary text, CTA, UTM, funnel stage, and
   success metric per variant, including creative family, execution, ad set,
-  opening frame, visual direction, and optimization event.
+  creative style, opening frame, visual direction, and optimization event.
+- `selection-sheet.csv` - a simple human review sheet for marking keep,
+  reject, or test candidates from larger creative batches.
 - `asset-prompts.jsonl` - image prompt records for the runtime-selected model
   provider.
 - `approval-pack.md` - human review pack before any ad account action.
@@ -151,9 +153,9 @@ The command writes:
 The default launch shape is strategy-first rather than random volume:
 
 - `--scale-profile launch-test --count 20` uses five creative families with
-  four executions each.
+  four executions each and rotates through five default creative styles.
 - `--scale-profile scale-100 --count 100` expands to ten creative families
-  across audience segments and placement-biased formats.
+  across audience segments, placement-biased formats, and the full style pool.
 - `--ad-set-strategy family` creates one draft ad set per creative family.
 - `--ad-set-strategy family-segment` creates family x audience-segment draft
   ad sets, which is useful for larger 100-ad planning packs.
@@ -164,6 +166,27 @@ The built-in creative families are industry-agnostic: native text-story,
 phone-demo video, problem static, proof/authority, free-tool funnel,
 comparison, objection handling, native UGC demo, retargeting next-action, and
 seasonal urgency. Use repeated `--creative-family` flags to constrain a test.
+
+Creative styles are separate from creative families. This lets the same angle
+appear as a polished product ad, native long-copy note, field note, text-message
+thread, low-polish checklist, raw screenshot, problem post, contrarian take,
+operator memo, comment reply, camera-roll dump, mini lesson, founder build log,
+or short-form video storyboard. Use repeated `--creative-style` flags to
+constrain a batch:
+
+```sh
+npm run creative:batch -- \
+  --brand "Example" \
+  --brand-url "https://example.com" \
+  --audience "operations managers" \
+  --offer "Mobile workflow app" \
+  --count 100 \
+  --scale-profile scale-100 \
+  --creative-style wall-of-text \
+  --creative-style raw-screenshot \
+  --creative-style comment-reply \
+  --publish-mode drafts-only
+```
 
 You can feed in better headline and body-copy research with repeated flags:
 

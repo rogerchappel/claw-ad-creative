@@ -98,6 +98,32 @@ Recommended reusable creative families:
 - retargeting next action,
 - seasonal or event urgency.
 
+Creative style is a separate dimension from creative family. A family describes
+the strategic angle; a style describes how native, polished, raw, educational,
+or video-ready the ad should feel. The same angle should be tested in more than
+one style so the batch does not become 100 versions of the same ad.
+
+Recommended reusable creative styles:
+
+- polished product,
+- wall of text,
+- field notes,
+- text-message thread,
+- ugly checklist,
+- raw screenshot,
+- problem post,
+- contrarian take,
+- operator memo,
+- comment reply,
+- camera-roll dump,
+- mini lesson,
+- founder build log,
+- video storyboard.
+
+For 100-ad exploration packs, include enough low-polish and native-looking
+styles that the user can test ads that feel like useful posts, notes, replies,
+or practical lessons rather than only polished commercial creative.
+
 Ad sets should stay reviewable. For a small launch, one draft ad set per
 creative family is usually enough to learn from the hypotheses. For a 100-ad
 planning pack, family x audience-segment draft ad sets can be useful, but only

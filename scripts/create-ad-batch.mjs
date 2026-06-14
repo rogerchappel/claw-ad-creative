@@ -75,6 +75,7 @@ writeJson(path.join(outDir, 'insight-brief.json'), insights);
 writeJson(path.join(outDir, 'scale-plan.json'), batchStrategy);
 writeJson(path.join(outDir, 'meta-draft-plan.json'), metaDraftPlan);
 writeFileSync(path.join(outDir, 'copy-matrix.csv'), toCopyCsv(variants), 'utf8');
+writeFileSync(path.join(outDir, 'selection-sheet.csv'), toSelectionCsv(variants), 'utf8');
 writeFileSync(path.join(outDir, 'asset-prompts.jsonl'), prompts.map((prompt) => JSON.stringify(prompt)).join('\n') + '\n', 'utf8');
 writeFileSync(path.join(outDir, 'approval-pack.md'), approvalPack, 'utf8');
 
@@ -539,19 +540,222 @@ function familyBlueprints() {
   ];
 }
 
+function creativeStyleBlueprints() {
+  return [
+    {
+      id: 'polished-product',
+      name: 'Polished Product',
+      category: 'commercial',
+      adFeel: 'clearly branded and product-led',
+      productionMode: 'static-or-video',
+      creativeType: 'polished product ad',
+      formatBias: ['4:5', '1:1', '9:16'],
+      primaryTextLimit: 240,
+      scaleRole: 'baseline commercial execution to compare against more native-looking styles',
+      openingFrame: 'polished brand layout with the product visible immediately',
+      visualDirection: 'controlled brand system, clear CTA space, product proof, and clean composition',
+      copyTreatment: 'concise benefit-led ad copy with one proof point and one action'
+    },
+    {
+      id: 'wall-of-text',
+      name: 'Wall Of Text',
+      category: 'native',
+      adFeel: 'like a plain text feed post instead of an ad',
+      productionMode: 'static',
+      creativeType: 'native long-copy text post',
+      formatBias: ['4:5', '1:1'],
+      primaryTextLimit: 520,
+      scaleRole: 'test whether direct long-form buyer language beats designed ad creative',
+      openingFrame: 'plain text block with small brand mark and no heavy art direction',
+      visualDirection: 'off-white or platform-native background, high-legibility text, minimal logo, no glossy device mockup unless it supports the point',
+      copyTreatment: 'write like a practical note from someone who understands the workflow'
+    },
+    {
+      id: 'field-notes',
+      name: 'Field Notes',
+      category: 'native',
+      adFeel: 'like a real working note captured during the job',
+      productionMode: 'static',
+      creativeType: 'notes-app or notebook style',
+      formatBias: ['9:16', '4:5'],
+      primaryTextLimit: 360,
+      scaleRole: 'turn the buyer workflow into a useful artifact rather than a sales pitch',
+      openingFrame: 'notebook, phone note, or checklist with a few specific work observations',
+      visualDirection: 'practical notes surface, subtle product screenshot, real-world props, imperfect but readable layout',
+      copyTreatment: 'use bullet-like field notes and concrete workflow language'
+    },
+    {
+      id: 'text-message-thread',
+      name: 'Text Message Thread',
+      category: 'native',
+      adFeel: 'like a useful message someone would send to a peer',
+      productionMode: 'static-or-video',
+      creativeType: 'message thread',
+      formatBias: ['9:16', '4:5'],
+      primaryTextLimit: 360,
+      scaleRole: 'test peer-to-peer recommendation framing without fake testimonials',
+      openingFrame: 'simple chat thread about the buyer problem and the product as the next step',
+      visualDirection: 'generic message bubbles, no private names, no fake customer identity, product link or screenshot as the useful handoff',
+      copyTreatment: 'short conversational lines with the product positioned as a practical share'
+    },
+    {
+      id: 'ugly-checklist',
+      name: 'Ugly Checklist',
+      category: 'native',
+      adFeel: 'deliberately practical and low-polish',
+      productionMode: 'static',
+      creativeType: 'checklist graphic',
+      formatBias: ['4:5', '1:1'],
+      primaryTextLimit: 320,
+      scaleRole: 'test utility and clarity over beauty',
+      openingFrame: 'large checklist with obvious unfinished items and one clear next action',
+      visualDirection: 'simple checklist, plain UI, bold check marks, minimal decoration, readable at mobile size',
+      copyTreatment: 'start with a checklist hook, then connect the product to one useful action'
+    },
+    {
+      id: 'raw-screenshot',
+      name: 'Raw Screenshot',
+      category: 'native',
+      adFeel: 'like someone showing the product in a post',
+      productionMode: 'static',
+      creativeType: 'raw screenshot first',
+      formatBias: ['9:16', '4:5'],
+      primaryTextLimit: 240,
+      scaleRole: 'test whether authentic product proof beats designed scenes',
+      openingFrame: 'real app or product screenshot dominates the frame',
+      visualDirection: 'large untreated screenshot, tiny caption, minimal brand lockup, avoid stock-photo polish',
+      copyTreatment: 'say what the screen helps the buyer do, without overselling'
+    },
+    {
+      id: 'problem-post',
+      name: 'Problem Post',
+      category: 'native',
+      adFeel: 'like a short social post about the category problem',
+      productionMode: 'static-or-video',
+      creativeType: 'native problem post',
+      formatBias: ['4:5', '1:1'],
+      primaryTextLimit: 360,
+      scaleRole: 'earn attention by naming the problem before showing the product',
+      openingFrame: 'one strong problem statement with comments or underlined phrases optional',
+      visualDirection: 'simple social-post layout, plain background, one small supporting product cue',
+      copyTreatment: 'lead with the buyer pain and keep the product mention secondary'
+    },
+    {
+      id: 'contrarian-take',
+      name: 'Contrarian Take',
+      category: 'native',
+      adFeel: 'like an opinionated industry take',
+      productionMode: 'static-or-video',
+      creativeType: 'contrarian text post',
+      formatBias: ['4:5', '9:16'],
+      primaryTextLimit: 380,
+      scaleRole: 'test sharp hooks that challenge the default workflow',
+      openingFrame: 'bold contrarian sentence, minimal visual support',
+      visualDirection: 'plain editorial layout, high contrast text, product proof only after the hook is understood',
+      copyTreatment: 'make a defensible point, then offer the product as the practical next step'
+    },
+    {
+      id: 'operator-memo',
+      name: 'Operator Memo',
+      category: 'native',
+      adFeel: 'like an internal memo from an experienced operator',
+      productionMode: 'static',
+      creativeType: 'memo card',
+      formatBias: ['4:5', '1:1'],
+      primaryTextLimit: 420,
+      scaleRole: 'test experienced-operator framing for niche professional audiences',
+      openingFrame: 'memo title, date or situation cue, and practical recommendation',
+      visualDirection: 'clean memo or email style, understated brand mark, no glossy ad treatment',
+      copyTreatment: 'write directly to the professional moment and avoid hype'
+    },
+    {
+      id: 'comment-reply',
+      name: 'Comment Reply',
+      category: 'native',
+      adFeel: 'like answering a common question in the comments',
+      productionMode: 'static-or-video',
+      creativeType: 'comment reply',
+      formatBias: ['9:16', '4:5'],
+      primaryTextLimit: 340,
+      scaleRole: 'turn objections and FAQs into feed-native ads',
+      openingFrame: 'question bubble or comment card answered by the brand/product',
+      visualDirection: 'generic comment UI, no real profile photos or private names, product answer shown simply',
+      copyTreatment: 'answer one common objection or question in plain language'
+    },
+    {
+      id: 'camera-roll-dump',
+      name: 'Camera Roll Dump',
+      category: 'native',
+      adFeel: 'like a casual set of work screenshots and photos',
+      productionMode: 'static-or-carousel',
+      creativeType: 'photo dump or carousel',
+      formatBias: ['1:1', '4:5'],
+      primaryTextLimit: 300,
+      scaleRole: 'test lower-polish reality cues and carousel-style proof',
+      openingFrame: 'collage of real work photos, screenshots, and notes',
+      visualDirection: 'camera-roll grid, imperfect crops, product screenshot, notes, and a clear final CTA panel',
+      copyTreatment: 'describe the workflow artifacts and what the product replaces or organizes'
+    },
+    {
+      id: 'mini-lesson',
+      name: 'Mini Lesson',
+      category: 'native',
+      adFeel: 'like useful educational content first and an ad second',
+      productionMode: 'static-or-video',
+      creativeType: 'educational list',
+      formatBias: ['9:16', '4:5'],
+      primaryTextLimit: 420,
+      scaleRole: 'give value before the click and qualify serious buyers',
+      openingFrame: 'numbered lesson or checklist with one clear teaching point',
+      visualDirection: 'simple lesson card, numbered steps, supporting screenshot, practical rather than decorative',
+      copyTreatment: 'teach three concrete checks and make the product the easiest way to do them'
+    },
+    {
+      id: 'founder-build-log',
+      name: 'Founder Build Log',
+      category: 'native',
+      adFeel: 'like a founder or team explaining why the product exists',
+      productionMode: 'static-or-video',
+      creativeType: 'founder note or build log',
+      formatBias: ['4:5', '9:16'],
+      primaryTextLimit: 520,
+      scaleRole: 'test mission and origin-story hooks without sounding corporate',
+      openingFrame: 'plain build-log note, product screenshot, and the pain that triggered the build',
+      visualDirection: 'low-polish founder note, product screenshot, rough workflow artifacts, understated brand mark',
+      copyTreatment: 'explain the product origin from the buyer problem and invite a low-risk test'
+    },
+    {
+      id: 'video-storyboard',
+      name: 'Video Storyboard',
+      category: 'video',
+      adFeel: 'like a short useful social video, not a corporate explainer',
+      productionMode: 'video-storyboard',
+      creativeType: 'short-form video storyboard',
+      formatBias: ['9:16'],
+      primaryTextLimit: 280,
+      scaleRole: 'prepare scripts and visual beats for future OpenAI, fal.ai, Higgsfield, or other video providers',
+      openingFrame: 'first video beat shows the real problem in the first second',
+      visualDirection: '3 to 5 short beats: problem, product action, result, CTA; realistic device geometry and no generated UI text',
+      copyTreatment: 'write a hook and beat-by-beat caption plan that can become a video prompt'
+    }
+  ];
+}
+
 function buildBatchStrategy({ args, audience, offer, count, formats, scaleProfile, adSetStrategy }) {
   const requestedFamilies = flattenList(asArray(args['creative-family']));
+  const requestedStyles = flattenList(asArray(args['creative-style']));
   const creativeFamilies = selectCreativeFamilies({ requestedFamilies, count, scaleProfile });
+  const creativeStyles = selectCreativeStyles({ requestedStyles, count, scaleProfile });
   const audienceSegments = buildAudienceSegments({ args, audience, count, scaleProfile });
   const adSets = buildAdSets({ creativeFamilies, audienceSegments, adSetStrategy, audience, offer });
 
   return {
-    version: 2,
+    version: 3,
     scaleProfile,
     adSetStrategy,
     targetVariantCount: count,
-    recommendedLaunchShape: '20 ads = 5 creative families x 4 executions',
-    recommendedScaleShape: '100 ads = 10 creative families x 10 executions across audience segments and placements',
+    recommendedLaunchShape: '20 ads = 5 creative families x 4 executions rotated through native and commercial creative styles',
+    recommendedScaleShape: '100 ads = 10 creative families x 10 executions rotated through native, commercial, and video-ready creative styles',
     formats,
     creativeFamilies: creativeFamilies.map((family) => ({
       id: family.id,
@@ -570,10 +774,25 @@ function buildBatchStrategy({ args, audience, offer, count, formats, scaleProfil
         visualDirection
       }))
     })),
+    creativeStyles: creativeStyles.map((style) => ({
+      id: style.id,
+      name: style.name,
+      category: style.category,
+      adFeel: style.adFeel,
+      productionMode: style.productionMode,
+      creativeType: style.creativeType,
+      formatBias: style.formatBias,
+      scaleRole: style.scaleRole,
+      openingFrame: style.openingFrame,
+      visualDirection: style.visualDirection,
+      copyTreatment: style.copyTreatment
+    })),
     audienceSegments,
     adSets,
     scalingRules: [
       'Do not make 100 unrelated ads; scale by family, execution, format, audience segment, and hook variation.',
+      'Treat creative style as separate from angle: the same angle should appear as polished creative, native text, raw screenshot, checklist, message thread, and video-ready storyboard variants.',
+      'Keep at least 30 percent of a 100-ad pack in low-polish native styles that do not look like conventional ads.',
       'Keep broad prospecting consolidated unless there is enough conversion volume to justify segmentation.',
       'Use 9:16 first for video/native demo ideas, then adapt winners to 4:5 and 1:1.',
       'Every ad should sell one job, one proof point, and one action.',
@@ -598,6 +817,38 @@ function selectCreativeFamilies({ requestedFamilies, count, scaleProfile }) {
   const blueprints = familyBlueprints();
   const targetFamilyCount = scaleProfile === 'scale-100' || count >= 80 ? 10 : Math.min(5, blueprints.length);
   return blueprints.slice(0, targetFamilyCount);
+}
+
+function selectCreativeStyles({ requestedStyles, count, scaleProfile }) {
+  const blueprints = creativeStyleBlueprints();
+
+  if (requestedStyles.length > 0) {
+    const requested = requestedStyles.map(slugify);
+    const selected = requested.map((id) => {
+      const match = blueprints.find((style) => style.id === id);
+      if (!match) {
+        fail(`unknown --creative-style "${id}". Valid values: ${blueprints.map((style) => style.id).join(', ')}`);
+      }
+      return match;
+    });
+    return dedupeById(selected);
+  }
+
+  const launchStyleOrder = [
+    'polished-product',
+    'wall-of-text',
+    'field-notes',
+    'raw-screenshot',
+    'ugly-checklist'
+  ];
+
+  if (scaleProfile === 'scale-100' || count >= 80) {
+    return blueprints;
+  }
+
+  return launchStyleOrder
+    .map((id) => blueprints.find((style) => style.id === id))
+    .filter(Boolean);
 }
 
 function buildAudienceSegments({ args, audience, count, scaleProfile }) {
@@ -862,8 +1113,9 @@ function buildVariants({ brand, audience, offer, cta, landingPage, formats, coun
   while (variants.length < count) {
     const concept = concepts[index % concepts.length];
     const familyRound = Math.floor(index / concepts.length);
+    const creativeStyle = pick(batchStrategy.creativeStyles, index);
     const execution = pick(concept.executions, familyRound);
-    const format = pickFormat({ formats, concept, index: familyRound });
+    const format = pickFormat({ formats, concept, creativeStyle, index: familyRound });
     const adSet = pickAdSetForConcept({ concept, batchStrategy, index: familyRound });
     const vocab = pick(insights.copyStrategy.vocabulary, index);
     const pain = pick(insights.copyStrategy.painPoints, index);
@@ -883,40 +1135,55 @@ function buildVariants({ brand, audience, offer, cta, landingPage, formats, coun
       action,
       vocab
     };
-    const headline = execution?.headline ? execution.headline(copyContext) : sentenceCase(outcome);
-    const primaryText = execution?.primary
+    const baseHeadline = execution?.headline ? execution.headline(copyContext) : sentenceCase(outcome);
+    const basePrimaryText = execution?.primary
       ? execution.primary(copyContext)
       : `${sentence(pain)} ${action}`;
+    const styledCopy = applyCreativeStyleCopy({
+      creativeStyle,
+      baseHeadline,
+      basePrimaryText,
+      context: copyContext
+    });
+    const openingFrame = combineStyleDirection(creativeStyle.openingFrame, execution?.openingFrame);
+    const visualDirection = combineStyleDirection(creativeStyle.visualDirection, execution?.visualDirection);
+    const creativeType = `${creativeStyle.creativeType}; ${concept.creativeType}`;
 
     variants.push({
-      id: `${String(index + 1).padStart(3, '0')}-${concept.id}-${execution?.id ?? 'variant'}-${format.replace(':', 'x')}`,
+      id: `${String(index + 1).padStart(3, '0')}-${creativeStyle.id}-${concept.id}-${execution?.id ?? 'variant'}-${format.replace(':', 'x')}`,
       conceptId: concept.id,
       conceptName: concept.name,
       familyId: concept.familyId,
       familyName: concept.name,
       executionId: execution?.id ?? 'variant',
       executionName: execution?.name ?? 'Variant',
+      creativeStyleId: creativeStyle.id,
+      creativeStyleName: creativeStyle.name,
+      creativeStyleCategory: creativeStyle.category,
+      adFeel: creativeStyle.adFeel,
+      productionMode: creativeStyle.productionMode,
+      copyTreatment: creativeStyle.copyTreatment,
       adSetId: adSet.id,
       adSetName: adSet.name,
       adSetStrategy: adSet.strategy,
       audienceSegment: adSet.audienceSegmentName,
       angle: concept.angle,
       funnelStage: adSet.funnelStage,
-      creativeType: concept.creativeType,
-      openingFrame: execution?.openingFrame ?? 'show the product in the buyer moment',
-      visualDirection: execution?.visualDirection ?? 'brand-relevant product proof in a real work setting',
+      creativeType,
+      openingFrame,
+      visualDirection,
       audience,
       format,
       offer,
       cta,
-      headline: trimTo(headline, 72),
-      primaryText: trimTo(primaryText, 240),
+      headline: trimTo(styledCopy.headline, 90),
+      primaryText: trimTo(styledCopy.primaryText, creativeStyle.primaryTextLimit ?? 240),
       description: trimTo(`${brand.name} helps ${audience} keep the work organised before the next decision.`, 120),
       landingPage: withUtm(landingPage, {
         utm_source: 'meta',
         utm_medium: 'paid_social',
         utm_campaign: `${slugify(brand.name)}_${batchStrategy.scaleProfile}_creative`,
-        utm_content: `${concept.id}_${execution?.id ?? 'variant'}_${format.replace(':', 'x')}`,
+        utm_content: `${creativeStyle.id}_${concept.id}_${execution?.id ?? 'variant'}_${format.replace(':', 'x')}`,
         utm_term: slugify(adSet.audienceSegmentName)
       }),
       researchHypothesis: concept.researchHypothesis,
@@ -931,23 +1198,149 @@ function buildVariants({ brand, audience, offer, cta, landingPage, formats, coun
   return variants;
 }
 
+function applyCreativeStyleCopy({ creativeStyle, baseHeadline, basePrimaryText, context }) {
+  const { brand, audience, offer, cta, pain, outcome, proof, objection, vocab } = context;
+
+  switch (creativeStyle.id) {
+    case 'wall-of-text':
+      return {
+        headline: `A note for ${audience}.`,
+        primaryText: [
+          sentence(pain),
+          `Most people already have a process. The problem is that the useful context gets spread across tabs, notes, screenshots, and memory right when the work speeds up.`,
+          `${brand.name} starts with ${withArticle(offer.toLowerCase())}: a simple way to keep ${proof.toLowerCase()} close to the decision.`,
+          `${cta} when you want a cleaner starting point.`
+        ].join('\n\n')
+      };
+    case 'field-notes':
+      return {
+        headline: `Field notes: ${sentenceCase(singular(vocab))} review.`,
+        primaryText: [
+          `Notes before the next ${vocab}:`,
+          `- ${sentenceCase(outcome)}`,
+          `- Keep ${proof.toLowerCase()} beside the decision`,
+          `- Check the context before the busy part starts`,
+          `${cta}: ${offer}.`
+        ].join('\n')
+      };
+    case 'text-message-thread':
+      return {
+        headline: 'Can you send me the context?',
+        primaryText: [
+          `"Have you checked this yet?"`,
+          `"Not properly. It is spread across notes and tabs."`,
+          `"Use ${brand.name}. Start with ${withArticle(offer.toLowerCase())} and send the useful context with the decision."`
+        ].join('\n')
+      };
+    case 'ugly-checklist':
+      return {
+        headline: `Before you ${verbFor(vocab)}:`,
+        primaryText: [
+          '[ ] Review the key context',
+          '[ ] Keep notes with the item',
+          '[ ] Compare the options that matter',
+          `[ ] Use ${offer} before the decision gets rushed`
+        ].join('\n')
+      };
+    case 'raw-screenshot':
+      return {
+        headline: baseHeadline,
+        primaryText: `${sentence(outcome)} The screenshot should do most of the explaining. Keep the copy simple and show ${withArticle(offer.toLowerCase())}.`
+      };
+    case 'problem-post':
+      return {
+        headline: sentenceCase(pain),
+        primaryText: `${sentence(pain)} That is the moment ${offer.toLowerCase()} is meant for: one clearer place to check ${proof.toLowerCase()} before the next step.`
+      };
+    case 'contrarian-take':
+      return {
+        headline: `Your ${singular(vocab)} might be too obvious.`,
+        primaryText: `The obvious options are easy to find. The missed context is usually where the work is. ${brand.name} helps ${audience} review ${proof.toLowerCase()} before they commit to the next step.`
+      };
+    case 'operator-memo':
+      return {
+        headline: `Memo: check the ${singular(vocab)} before the rush.`,
+        primaryText: [
+          `Audience: ${audience}.`,
+          `Problem: ${pain}`,
+          `Recommendation: use ${withArticle(offer.toLowerCase())} to keep the working context in one place.`,
+          `Reason: ${outcome}.`
+        ].join('\n')
+      };
+    case 'comment-reply':
+      return {
+        headline: `Can I just try the free part?`,
+        primaryText: `Yes. Start with ${withArticle(offer.toLowerCase())}. If it helps you ${outcome.toLowerCase()}, then decide whether the deeper workflow is worth it.`
+      };
+    case 'camera-roll-dump':
+      return {
+        headline: 'Your camera roll is not a workflow.',
+        primaryText: `Screenshots, notes, and saved links help until they become the mess. ${brand.name} gives ${audience} a cleaner place to keep ${proof.toLowerCase()}.`
+      };
+    case 'mini-lesson':
+      return {
+        headline: `3 checks before you ${verbFor(vocab)}.`,
+        primaryText: [
+          `1. What context changes the decision?`,
+          `2. What notes need to stay attached?`,
+          `3. What should be compared before the deadline?`,
+          `${offer} gives those checks a cleaner starting point.`
+        ].join('\n')
+      };
+    case 'founder-build-log':
+      return {
+        headline: `We built this because the work got too scattered.`,
+        primaryText: [
+          `${sentence(pain)}`,
+          `That is not a judgement problem. It is a workflow problem.`,
+          `${brand.name} starts with ${withArticle(offer.toLowerCase())} so ${audience} can keep ${proof.toLowerCase()} closer to the decision.`,
+          `${cta} and try it on a real workflow.`
+        ].join('\n\n')
+      };
+    case 'video-storyboard':
+      return {
+        headline: `Show the problem in the first second.`,
+        primaryText: [
+          `Beat 1: ${pain}`,
+          `Beat 2: open ${offer.toLowerCase()}`,
+          `Beat 3: show ${proof.toLowerCase()}`,
+          `Beat 4: ${cta}`
+        ].join('\n')
+      };
+    default:
+      return {
+        headline: baseHeadline,
+        primaryText: basePrimaryText
+      };
+  }
+}
+
+function combineStyleDirection(styleDirection, executionDirection) {
+  return [styleDirection, executionDirection].filter(Boolean).join(' Base execution: ');
+}
+
 function buildAssetPrompt({ brand, variant }) {
   return {
     id: variant.id,
     conceptName: variant.conceptName,
     family: variant.familyName,
     execution: variant.executionName,
+    creativeStyle: variant.creativeStyleName,
+    creativeStyleCategory: variant.creativeStyleCategory,
     adSet: variant.adSetName,
     placement: 'Meta feed/story/reels creative',
     aspectRatio: variant.format,
     creativeType: variant.creativeType,
+    productionMode: variant.productionMode,
     provider: 'runtime-selected',
     model: 'runtime-selected',
     prompt: [
       `Create a Meta ad visual for ${variant.audience} promoting ${variant.offer}.`,
       `Creative family: ${variant.familyName}; execution: ${variant.executionName}.`,
+      `Creative style: ${variant.creativeStyleName}; category: ${variant.creativeStyleCategory}; feel: ${variant.adFeel}.`,
       `Opening frame: ${variant.openingFrame}.`,
       `Scene: ${variant.visualDirection}.`,
+      `Copy treatment: ${variant.copyTreatment}.`,
       'Subject: realistic phone or tablet showing the product workflow, with practical props that support the buyer moment.',
       `Composition: mobile-first ${variant.format} layout with clear space for headline and CTA.`,
       `Brand feel: ${brand.name}; ${brand.typography}.`,
@@ -963,6 +1356,7 @@ function buildAssetPrompt({ brand, variant }) {
       'unreadable generated UI text',
       'unsupported guarantee',
       'fake phone side slab',
+      'over-polished stock ad when native style is requested',
       'watermark'
     ],
     copyLayer: {
@@ -973,6 +1367,8 @@ function buildAssetPrompt({ brand, variant }) {
     productionNotes: {
       openingFrame: variant.openingFrame,
       visualDirection: variant.visualDirection,
+      creativeStyle: variant.creativeStyleName,
+      productionMode: variant.productionMode,
       creativeType: variant.creativeType,
       targetAdSet: variant.adSetName,
       optimizationEvent: variant.optimizationEvent
@@ -1028,6 +1424,10 @@ function buildMetaDraftPlan({ brand, audience, offer, cta, variants, publishMode
       familyId: variant.familyId,
       familyName: variant.familyName,
       executionId: variant.executionId,
+      creativeStyleId: variant.creativeStyleId,
+      creativeStyleName: variant.creativeStyleName,
+      creativeStyleCategory: variant.creativeStyleCategory,
+      productionMode: variant.productionMode,
       creativeType: variant.creativeType,
       format: variant.format,
       headline: variant.headline,
@@ -1078,12 +1478,18 @@ change, targeting change, or live edit is approved by this document.
 - Launch shape: ${batchStrategy.recommendedLaunchShape}
 - Scale shape: ${batchStrategy.recommendedScaleShape}
 - Creative families: ${batchStrategy.creativeFamilies.length}
+- Creative styles: ${batchStrategy.creativeStyles.length}
 - Audience segments: ${batchStrategy.audienceSegments.length}
 - Draft ad sets: ${batchStrategy.adSets.length}
 
 Creative families:
 ${batchStrategy.creativeFamilies
   .map((family) => `- ${family.name}: ${family.scaleRole}`)
+  .join('\n')}
+
+Creative styles:
+${batchStrategy.creativeStyles
+  .map((style) => `- ${style.name}: ${style.adFeel}; ${style.scaleRole}`)
   .join('\n')}
 
 Draft ad sets:
@@ -1147,6 +1553,8 @@ ${variants
 - Ad set: ${variant.adSetName}
 - Concept: ${variant.conceptName}
 - Family/execution: ${variant.familyName} / ${variant.executionName}
+- Creative style: ${variant.creativeStyleName} (${variant.creativeStyleCategory})
+- Production mode: ${variant.productionMode}
 - Creative type: ${variant.creativeType}
 - Format: ${variant.format}
 - Headline: ${variant.headline}
@@ -1239,10 +1647,14 @@ function toCopyCsv(variants) {
     'audienceSegment',
     'familyName',
     'executionName',
+    'creativeStyleName',
+    'creativeStyleCategory',
+    'productionMode',
     'conceptName',
     'angle',
     'funnelStage',
     'creativeType',
+    'adFeel',
     'audience',
     'format',
     'headline',
@@ -1264,8 +1676,41 @@ function toCopyCsv(variants) {
   ].join('\n') + '\n';
 }
 
+function toSelectionCsv(variants) {
+  const columns = [
+    'decision',
+    'reviewNotes',
+    'id',
+    'creativeStyleName',
+    'creativeStyleCategory',
+    'familyName',
+    'executionName',
+    'angle',
+    'funnelStage',
+    'format',
+    'headline',
+    'primaryText',
+    'openingFrame',
+    'visualDirection',
+    'successMetric',
+    'optimizationEvent'
+  ];
+
+  return [
+    columns.join(','),
+    ...variants.map((variant) =>
+      columns
+        .map((column) => {
+          if (column === 'decision' || column === 'reviewNotes') return csvEscape('');
+          return csvEscape(variant[column]);
+        })
+        .join(',')
+    )
+  ].join('\n') + '\n';
+}
+
 function csvEscape(value) {
-  const text = String(value ?? '');
+  const text = String(value ?? '').replace(/\r?\n/g, ' / ');
   return `"${text.replaceAll('"', '""')}"`;
 }
 
@@ -1289,8 +1734,9 @@ function parseChoice(value, name, choices) {
   return value;
 }
 
-function pickFormat({ formats, concept, index }) {
-  const preferred = concept.formatBias.find((format) => formats.includes(format));
+function pickFormat({ formats, concept, creativeStyle, index }) {
+  const preferredFormats = [...(creativeStyle?.formatBias ?? []), ...concept.formatBias];
+  const preferred = preferredFormats.find((format) => formats.includes(format));
   if (preferred && index % 2 === 0) return preferred;
   return formats[index % formats.length];
 }
@@ -1541,12 +1987,14 @@ Optional research inputs:
 
 Optional batch fields:
   --cta, --count, --formats, --landing-page, --publish-mode, --out-dir,
-  --scale-profile, --ad-set-strategy, --creative-family, --audience-segment
+  --scale-profile, --ad-set-strategy, --creative-family, --creative-style,
+  --audience-segment
 
 Scale fields:
   --scale-profile launch-test|scale-100|custom
   --ad-set-strategy consolidated|family|family-segment
   --creative-family native-text-story|phone-demo-video|problem-static|proof-authority|free-tool-funnel|comparison|objection-handling|native-ugc-demo|retargeting-next-action|seasonal-urgency
+  --creative-style polished-product|wall-of-text|field-notes|text-message-thread|ugly-checklist|raw-screenshot|problem-post|contrarian-take|operator-memo|comment-reply|camera-roll-dump|mini-lesson|founder-build-log|video-storyboard
   --audience-segment "Broad Core Market" --audience-segment "Warm Engagers"
 
 Notes:
