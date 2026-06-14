@@ -123,6 +123,8 @@ npm run creative:batch -- \
   --cta "Install Free" \
   --count 40 \
   --formats "9:16,4:5,1:1" \
+  --scale-profile launch-test \
+  --ad-set-strategy family \
   --primary "#28564a" \
   --accent "#1f7a4f" \
   --publish-mode drafts-only \
@@ -135,13 +137,33 @@ The command writes:
   Reddit/forums, YouTube/comments, owned pages, and adjacent products.
 - `insight-brief.json` - pain points, outcomes, objections, proof points, and
   headline/body copy rules.
+- `scale-plan.json` - creative families, audience segments, ad-set strategy,
+  scaling rules, and draft ad-set structure.
 - `copy-matrix.csv` - headline, primary text, CTA, UTM, funnel stage, and
-  success metric per variant.
+  success metric per variant, including creative family, execution, ad set,
+  opening frame, visual direction, and optimization event.
 - `asset-prompts.jsonl` - image prompt records for the runtime-selected model
   provider.
 - `approval-pack.md` - human review pack before any ad account action.
 - `meta-draft-plan.json` - draft-only ad records, with publish/budget changes
   explicitly out of scope.
+
+The default launch shape is strategy-first rather than random volume:
+
+- `--scale-profile launch-test --count 20` uses five creative families with
+  four executions each.
+- `--scale-profile scale-100 --count 100` expands to ten creative families
+  across audience segments and placement-biased formats.
+- `--ad-set-strategy family` creates one draft ad set per creative family.
+- `--ad-set-strategy family-segment` creates family x audience-segment draft
+  ad sets, which is useful for larger 100-ad planning packs.
+- `--ad-set-strategy consolidated` keeps ad sets grouped by funnel stage when
+  you want Meta delivery to do more of the learning.
+
+The built-in creative families are industry-agnostic: native text-story,
+phone-demo video, problem static, proof/authority, free-tool funnel,
+comparison, objection handling, native UGC demo, retargeting next-action, and
+seasonal urgency. Use repeated `--creative-family` flags to constrain a test.
 
 You can feed in better headline and body-copy research with repeated flags:
 
