@@ -108,6 +108,60 @@ Run the local validation script before opening a pull request:
 bash scripts/validate.sh
 ```
 
+## Bulk Creative Batches
+
+Generate a research-first creative batch scaffold with headline variants,
+primary text, image prompts, an approval pack, and a draft-only Meta import
+plan:
+
+```sh
+npm run creative:batch -- \
+  --brand "Thoroughbreds.ai" \
+  --brand-url "https://www.thoroughbreds.ai" \
+  --audience "bloodstock agents" \
+  --offer "Free iOS catalogue viewer" \
+  --cta "Install Free" \
+  --count 40 \
+  --formats "9:16,4:5,1:1" \
+  --primary "#28564a" \
+  --accent "#1f7a4f" \
+  --publish-mode drafts-only \
+  --out-dir output/ad-batches/thoroughbreds-ai
+```
+
+The command writes:
+
+- `research-plan.json` - sources, queries, and capture fields for Ads Library,
+  Reddit/forums, YouTube/comments, owned pages, and adjacent products.
+- `insight-brief.json` - pain points, outcomes, objections, proof points, and
+  headline/body copy rules.
+- `copy-matrix.csv` - headline, primary text, CTA, UTM, funnel stage, and
+  success metric per variant.
+- `asset-prompts.jsonl` - image prompt records for the runtime-selected model
+  provider.
+- `approval-pack.md` - human review pack before any ad account action.
+- `meta-draft-plan.json` - draft-only ad records, with publish/budget changes
+  explicitly out of scope.
+
+You can feed in better headline and body-copy research with repeated flags:
+
+```sh
+npm run creative:batch -- \
+  --brand "Example" \
+  --brand-url "https://example.com" \
+  --audience "operations managers" \
+  --offer "Mobile workflow app" \
+  --pain-point "Teams lose decisions across chats and spreadsheets" \
+  --outcome "Get to a clean working list before the next meeting" \
+  --objection "The team already has a manual process" \
+  --proof "free mobile workflow" \
+  --vocabulary "shortlist" \
+  --research-note ./research-notes.md
+```
+
+Research note files may include labelled lines such as `Pain: ...`,
+`Outcome: ...`, `Objection: ...`, `Proof: ...`, and `Vocabulary: ...`.
+
 ## Repository Map
 
 - `docs/architecture.md` - two-agent model and safety boundaries.
