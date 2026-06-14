@@ -11,7 +11,8 @@
     "creative:device-prompt": "node scripts/create-device-creative-prompt.mjs",
     "setup:check": "bash scripts/install-mcps.sh check",
     "setup:print-config": "bash scripts/install-mcps.sh print-config",
-    "release:check": "npm run check && npm pack --dry-run"
+    "release:check": "npm run check && npm pack --dry-run",
+    "package:smoke": "npm pack --dry-run"
   },
   "keywords": [
     "agents",
