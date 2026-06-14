@@ -77,3 +77,30 @@ A useful first batch is:
 - 1 comparison ad,
 - 1 urgency/event ad,
 - 1 wildcard learning ad.
+
+For larger accounts, scale the same logic rather than asking for unrelated
+ideas. A practical shape is:
+
+- 20-ad launch test: 5 creative families x 4 executions.
+- 100-ad scale pack: 10 creative families x 10 executions, spread across
+  formats, hooks, and reviewed audience segments.
+
+Recommended reusable creative families:
+
+- native text-story,
+- phone demo video,
+- problem static,
+- proof or authority,
+- free-tool or lead-magnet funnel,
+- comparison,
+- objection handling,
+- native UGC demo,
+- retargeting next action,
+- seasonal or event urgency.
+
+Ad sets should stay reviewable. For a small launch, one draft ad set per
+creative family is usually enough to learn from the hypotheses. For a 100-ad
+planning pack, family x audience-segment draft ad sets can be useful, but only
+publish that structure after checking conversion volume, budget, and tracking.
+When signal is thin, consolidate ad sets and let creative do more of the
+qualification.
