@@ -106,7 +106,14 @@ Run the local validation script before opening a pull request:
 
 ```sh
 bash scripts/validate.sh
+npm run package:smoke
+npm run release:check
 ```
+
+`package:smoke` runs a dry-run package build and confirms the docs, examples,
+bundled skill files, setup scripts, README, and license are present in the
+tarball. `release:check` combines the documentation checks with the package
+smoke used by CI.
 
 ## Bulk Creative Batches
 
