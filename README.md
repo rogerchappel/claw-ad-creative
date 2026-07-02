@@ -229,3 +229,12 @@ Research note files may include labelled lines such as `Pain: ...`,
 ## License
 
 MIT
+
+## Local Verification
+
+Run the committed test suite before publishing changes:
+
+```sh
+npm test
+```
+
