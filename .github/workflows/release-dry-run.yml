@@ -27,13 +27,7 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: |
-          set -euo pipefail
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
+        run: npm ci
       - name: Install ReleaseBox
         run: |
           set -euo pipefail

@@ -25,13 +25,7 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
       - name: Install dependencies
-        run: |
-          set -euo pipefail
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
+        run: npm ci
       - name: Install ReleaseBox
         run: |
           set -euo pipefail
