@@ -11,7 +11,7 @@
     "creative:device-prompt": "node scripts/create-device-creative-prompt.mjs",
     "setup:check": "bash scripts/install-mcps.sh check",
     "setup:print-config": "bash scripts/install-mcps.sh print-config",
-    "release:check": "npm run check && npm run package:smoke",
+    "release:check": "npm run check && npm test && npm run package:smoke",
     "package:smoke": "node scripts/package-smoke.mjs"
   },
   "keywords": [
