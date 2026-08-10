@@ -6,7 +6,7 @@
 
 ## Verification Flow
 
-1. Install dependencies with `npm install` when no lockfile is present.
+1. Install the locked dependencies with `npm ci`.
 2. Run `npm run release:check`.
 3. Run `releasebox check .` with the `docs` project profile.
 4. Preview release notes in the release dry-run workflow.
