@@ -105,15 +105,17 @@ Agents using this workflow should never:
 Run the local validation script before opening a pull request:
 
 ```sh
+npm ci
 bash scripts/validate.sh
+npm test
 npm run package:smoke
 npm run release:check
 ```
 
 `package:smoke` runs a dry-run package build and confirms the docs, examples,
 bundled skill files, setup scripts, README, and license are present in the
-tarball. `release:check` combines the documentation checks with the package
-smoke used by CI.
+tarball. `release:check` combines the documentation checks, committed test
+suite, and package smoke used by CI.
 
 ## Bulk Creative Batches
 
@@ -237,4 +239,3 @@ Run the committed test suite before publishing changes:
 ```sh
 npm test
 ```
-
