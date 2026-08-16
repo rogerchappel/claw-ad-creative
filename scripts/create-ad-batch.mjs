@@ -21,7 +21,7 @@ const audience = required(args, 'audience');
 const offer = required(args, 'offer');
 const cta = args.cta ?? 'Learn More';
 const count = parsePositiveInteger(args.count ?? '20', 'count');
-const formats = splitList(args.formats ?? '9:16,4:5,1:1');
+const formats = parseNonEmptyList(args.formats ?? '9:16,4:5,1:1', 'formats');
 const scaleProfile = parseChoice(args['scale-profile'] ?? inferScaleProfile(count), 'scale-profile', [
   'launch-test',
   'scale-100',
@@ -1863,9 +1863,18 @@ function splitList(value) {
     .filter(Boolean);
 }
 
+function parseNonEmptyList(value, name) {
+  const values = splitList(value);
+  if (values.length === 0) {
+    fail(`--${name} must contain at least one non-empty value`);
+  }
+  return values;
+}
+
 function parsePositiveInteger(value, name) {
-  const parsed = Number.parseInt(value, 10);
-  if (!Number.isInteger(parsed) || parsed < 1) {
+  const text = String(value);
+  const parsed = Number(text);
+  if (!/^[1-9]\d*$/.test(text) || !Number.isSafeInteger(parsed)) {
     fail(`--${name} must be a positive integer`);
   }
   return parsed;
@@ -1989,6 +1998,10 @@ Optional batch fields:
   --cta, --count, --formats, --landing-page, --publish-mode, --out-dir,
   --scale-profile, --ad-set-strategy, --creative-family, --creative-style,
   --audience-segment
+
+Batch constraints:
+  --count must be a positive whole number (for example, 20)
+  --formats must contain at least one non-empty comma-separated value
 
 Scale fields:
   --scale-profile launch-test|scale-100|custom
