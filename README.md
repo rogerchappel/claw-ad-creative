@@ -161,6 +161,10 @@ The command writes:
 
 The default launch shape is strategy-first rather than random volume:
 
+- `--count` accepts positive whole numbers only; values such as `2oops`, `0`,
+  and decimals are rejected.
+- `--formats` accepts a comma-separated list with at least one non-empty
+  format value, such as `9:16` or `9:16,4:5,1:1`.
 - `--scale-profile launch-test --count 20` uses five creative families with
   four executions each and rotates through five default creative styles.
 - `--scale-profile scale-100 --count 100` expands to ten creative families
