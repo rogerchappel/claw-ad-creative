@@ -2,6 +2,14 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
+const supportedOptions = new Set([
+  'brand', 'brand-url', 'logo', 'primary', 'secondary', 'accent', 'typography',
+  'audience', 'offer', 'research-source', 'research-note', 'competitor', 'pain-point',
+  'outcome', 'objection', 'proof', 'vocabulary', 'cta', 'count', 'formats',
+  'landing-page', 'publish-mode', 'out-dir', 'scale-profile', 'ad-set-strategy',
+  'creative-family', 'creative-style', 'audience-segment'
+]);
+
 const args = parseArgs(process.argv.slice(2));
 
 if (args.help) {
@@ -1934,6 +1942,9 @@ function parseArgs(argv) {
     }
 
     const key = token.slice(2);
+    if (!supportedOptions.has(key)) {
+      fail(`unrecognized option: --${key}`);
+    }
     const value = argv[i + 1];
 
     if (!value || value.startsWith('--')) {
@@ -2000,6 +2011,7 @@ Optional batch fields:
   --audience-segment
 
 Batch constraints:
+  Unknown long options are rejected before any output is created.
   --count must be a positive whole number (for example, 20)
   --formats must contain at least one non-empty comma-separated value
 

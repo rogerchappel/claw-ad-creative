@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 import { writeFileSync } from 'node:fs';
 
+const supportedOptions = new Set([
+  'brand-name', 'brand-url', 'logo', 'primary', 'secondary', 'accent', 'typography',
+  'screenshot', 'audience', 'offer', 'cta', 'aspect-ratio', 'provider', 'model',
+  'style', 'scene', 'device', 'angle', 'out'
+]);
+
 const args = parseArgs(process.argv.slice(2));
 
 if (args.help) {
@@ -168,6 +174,9 @@ function parseArgs(argv) {
     }
 
     const key = token.slice(2);
+    if (!supportedOptions.has(key)) {
+      fail(`unrecognized option: --${key}`);
+    }
     const value = argv[i + 1];
 
     if (!value || value.startsWith('--')) {
@@ -228,5 +237,8 @@ Optional:
   --brand-url, --logo, --primary, --secondary, --accent, --typography,
   --aspect-ratio, --provider, --model, --style, --scene, --device, --angle,
   --out
+
+Validation:
+  Unknown long options are rejected before the output file is created.
 `);
 }
