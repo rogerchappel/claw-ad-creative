@@ -56,6 +56,15 @@ test('rejects an empty formats list without a stack trace or output', async () =
   await assert.rejects(readFile(path.join(outDir, 'copy-matrix.csv')), { code: 'ENOENT' });
 });
 
+test('rejects an unknown long option before writing output', async () => {
+  const { outDir, result } = await runBatch(['--coutn', '999', '--count', '1']);
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr, 'ERROR: unrecognized option: --coutn\nRun with --help for usage.\n');
+  await assert.rejects(readFile(path.join(outDir, 'meta-draft-plan.json')), { code: 'ENOENT' });
+});
+
 test('generates the requested variants for a documented batch invocation', async () => {
   const { outDir, result } = await runBatch(['--count', '3', '--formats', '9:16,4:5,1:1']);
 
