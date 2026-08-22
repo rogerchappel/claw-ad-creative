@@ -237,6 +237,7 @@ function printHelp() {
 
 Required:
   --brand-name, --screenshot, --audience, --offer, --cta
+  --screenshot may be repeated to include multiple source images.
 
 Optional:
   --brand-url, --logo, --primary, --secondary, --accent, --typography,
@@ -244,6 +245,8 @@ Optional:
   --out
 
 Validation:
+  All options except --screenshot are scalar and may be specified only once.
   Unknown long options are rejected before the output file is created.
+  --out creates missing parent directories before writing the prompt pack.
 `);
 }
