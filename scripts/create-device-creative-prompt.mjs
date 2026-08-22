@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 
 const supportedOptions = new Set([
   'brand-name', 'brand-url', 'logo', 'primary', 'secondary', 'accent', 'typography',
   'screenshot', 'audience', 'offer', 'cta', 'aspect-ratio', 'provider', 'model',
   'style', 'scene', 'device', 'angle', 'out'
 ]);
+const repeatableOptions = new Set(['screenshot']);
 
 const args = parseArgs(process.argv.slice(2));
 
@@ -111,6 +113,7 @@ const promptPack = {
 const json = `${JSON.stringify(promptPack, null, 2)}\n`;
 
 if (args.out) {
+  mkdirSync(path.dirname(path.resolve(args.out)), { recursive: true });
   writeFileSync(args.out, json, 'utf8');
   console.log(args.out);
 } else {
@@ -185,10 +188,12 @@ function parseArgs(argv) {
 
     if (parsed[key] === undefined) {
       parsed[key] = value;
-    } else if (Array.isArray(parsed[key])) {
+    } else if (repeatableOptions.has(key) && !Array.isArray(parsed[key])) {
+      parsed[key] = [parsed[key], value];
+    } else if (repeatableOptions.has(key)) {
       parsed[key].push(value);
     } else {
-      parsed[key] = [parsed[key], value];
+      fail(`option may only be specified once: --${key}`);
     }
 
     i += 1;
@@ -232,6 +237,7 @@ function printHelp() {
 
 Required:
   --brand-name, --screenshot, --audience, --offer, --cta
+  --screenshot may be repeated to include multiple source images.
 
 Optional:
   --brand-url, --logo, --primary, --secondary, --accent, --typography,
@@ -239,6 +245,8 @@ Optional:
   --out
 
 Validation:
+  All options except --screenshot are scalar and may be specified only once.
   Unknown long options are rejected before the output file is created.
+  --out creates missing parent directories before writing the prompt pack.
 `);
 }
