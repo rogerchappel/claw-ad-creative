@@ -269,6 +269,7 @@ Optional:
 Validation:
   All options except --screenshot are scalar and may be specified only once.
   Unknown long options are rejected before the output file is created.
+  --out must not alias a --screenshot or --logo source asset.
   --out creates missing parent directories before writing the prompt pack.
 `);
 }
