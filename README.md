@@ -63,8 +63,10 @@ It tells an agent how to:
 `--screenshot` more than once to include multiple source images; every other
 option is scalar and duplicate scalar options are rejected without writing an
 output file. When `--out` names a path whose parent directories do not yet
-exist, the CLI creates them before writing the prompt pack. Run the command
-with `--help` for the complete option list.
+exist, the CLI creates them before writing the prompt pack. The output path
+must be distinct from every `--screenshot` and `--logo` source path; relative,
+absolute, symlink, and hard-link aliases are rejected before any write. Run the
+command with `--help` for the complete option list.
 
 The skill keeps `SKILL.md` lean and stores deeper guidance in `references/`.
 `skills/facebook-ad-creative/skill.json` adds the CrewCMD-style install

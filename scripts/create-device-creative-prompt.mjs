@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const supportedOptions = new Set([
@@ -24,6 +24,10 @@ const cta = required(args, 'cta');
 const screenshots = asArray(args.screenshot);
 if (screenshots.length === 0) {
   fail('missing required --screenshot path');
+}
+
+if (args.out) {
+  assertDistinctOutput(args.out, [...screenshots, args.logo].filter(Boolean));
 }
 
 const aspectRatio = args['aspect-ratio'] ?? '4:5';
@@ -213,6 +217,24 @@ function required(source, key) {
   return value;
 }
 
+function assertDistinctOutput(output, sourceAssets) {
+  const resolvedOutput = path.resolve(output);
+
+  for (const source of sourceAssets) {
+    const resolvedSource = path.resolve(source);
+    if (resolvedOutput === resolvedSource || existingFilesMatch(resolvedOutput, resolvedSource)) {
+      fail(`--out must not overwrite a source asset: ${source}`);
+    }
+  }
+}
+
+function existingFilesMatch(left, right) {
+  if (!existsSync(left) || !existsSync(right)) return false;
+  const leftStat = statSync(left);
+  const rightStat = statSync(right);
+  return leftStat.dev === rightStat.dev && leftStat.ino === rightStat.ino;
+}
+
 function fail(message) {
   console.error(`ERROR: ${message}`);
   console.error('Run with --help for usage.');
@@ -247,6 +269,7 @@ Optional:
 Validation:
   All options except --screenshot are scalar and may be specified only once.
   Unknown long options are rejected before the output file is created.
+  --out must not alias a --screenshot or --logo source asset.
   --out creates missing parent directories before writing the prompt pack.
 `);
 }
