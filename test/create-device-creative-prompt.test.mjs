@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, test } from 'node:test';
 
 const temporaryDirectories = [];
+const script = fileURLToPath(new URL('../scripts/create-device-creative-prompt.mjs', import.meta.url));
 
 afterEach(async () => {
   await Promise.all(temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })));
@@ -71,4 +73,61 @@ test('creates parent directories for nested output paths', async () => {
   assert.equal(result.stdout.trim(), out);
   const prompt = JSON.parse(await readFile(out, 'utf8'));
   assert.equal(prompt.brand.name, 'Test Brand');
+});
+
+test('rejects a screenshot output alias and preserves the source', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'claw-device-prompt-collision-test-'));
+  temporaryDirectories.push(root);
+  const screenshot = path.join(root, 'screenshot.png');
+  await writeFile(screenshot, 'PNG-SOURCE');
+
+  const result = spawnSync(process.execPath, [
+    script,
+    '--brand-name', 'Test Brand', '--screenshot', 'screenshot.png',
+    '--audience', 'test audience', '--offer', 'Test offer', '--cta', 'Try it',
+    '--out', screenshot
+  ], { cwd: root, encoding: 'utf8' });
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr, 'ERROR: --out must not overwrite a source asset: screenshot.png\nRun with --help for usage.\n');
+  assert.equal(await readFile(screenshot, 'utf8'), 'PNG-SOURCE');
+});
+
+test('rejects a logo output alias and preserves the source', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'claw-device-prompt-logo-collision-test-'));
+  temporaryDirectories.push(root);
+  const logo = path.join(root, 'logo.png');
+  await writeFile(logo, 'LOGO-SOURCE');
+
+  const result = spawnSync(process.execPath, [
+    script,
+    '--brand-name', 'Test Brand', '--screenshot', 'screenshot.png', '--logo', logo,
+    '--audience', 'test audience', '--offer', 'Test offer', '--cta', 'Try it',
+    '--out', 'logo.png'
+  ], { cwd: root, encoding: 'utf8' });
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr, `ERROR: --out must not overwrite a source asset: ${logo}\nRun with --help for usage.\n`);
+  assert.equal(await readFile(logo, 'utf8'), 'LOGO-SOURCE');
+});
+
+test('writes a distinct nested output when source assets are present', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'claw-device-prompt-distinct-test-'));
+  temporaryDirectories.push(root);
+  await writeFile(path.join(root, 'screenshot.png'), 'PNG-SOURCE');
+  await writeFile(path.join(root, 'logo.png'), 'LOGO-SOURCE');
+  const out = path.join(root, 'nested', 'prompt.json');
+
+  const result = spawnSync(process.execPath, [
+    script,
+    '--brand-name', 'Test Brand', '--screenshot', 'screenshot.png', '--logo', 'logo.png',
+    '--audience', 'test audience', '--offer', 'Test offer', '--cta', 'Try it',
+    '--out', out
+  ], { cwd: root, encoding: 'utf8' });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), out);
+  assert.equal(JSON.parse(await readFile(out, 'utf8')).brand.logo, 'logo.png');
 });
