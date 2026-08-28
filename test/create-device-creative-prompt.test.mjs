@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { link, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -98,13 +98,15 @@ test('rejects a logo output alias and preserves the source', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'claw-device-prompt-logo-collision-test-'));
   temporaryDirectories.push(root);
   const logo = path.join(root, 'logo.png');
+  const outputAlias = path.join(root, 'logo-output.png');
   await writeFile(logo, 'LOGO-SOURCE');
+  await link(logo, outputAlias);
 
   const result = spawnSync(process.execPath, [
     script,
     '--brand-name', 'Test Brand', '--screenshot', 'screenshot.png', '--logo', logo,
     '--audience', 'test audience', '--offer', 'Test offer', '--cta', 'Try it',
-    '--out', 'logo.png'
+    '--out', 'logo-output.png'
   ], { cwd: root, encoding: 'utf8' });
 
   assert.equal(result.status, 1);
