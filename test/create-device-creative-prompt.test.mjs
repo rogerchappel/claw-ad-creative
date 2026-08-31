@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { link, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, link, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -73,6 +73,18 @@ test('rejects missing, unreadable, and non-regular source assets before creating
     assert.match(result.stderr, /source asset is not a regular file/);
     await assert.rejects(readFile(out), { code: 'ENOENT' });
   });
+
+  await t.test('unreadable logo', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'claw-device-prompt-unreadable-test-'));
+    temporaryDirectories.push(root);
+    const logo = path.join(root, 'logo.png');
+    await writeFile(logo, 'LOGO-SOURCE');
+    await chmod(logo, 0o000);
+    const { out, result } = await runPrompt(['--logo', logo]);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /source asset is not readable/);
+    await assert.rejects(readFile(out), { code: 'ENOENT' });
+  });
 });
 
 test('rejects duplicate scalar options before writing output', async () => {
@@ -88,9 +100,11 @@ test('creates parent directories for nested output paths', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'claw-device-prompt-nested-test-'));
   temporaryDirectories.push(root);
   const out = path.join(root, 'nested', 'prompt-packs', 'prompt.json');
+  const screenshot = path.join(root, 'first.png');
+  await writeFile(screenshot, 'PNG-SOURCE');
   const result = spawnSync(process.execPath, [
     'scripts/create-device-creative-prompt.mjs',
-    '--brand-name', 'Test Brand', '--screenshot', '/tmp/first.png',
+    '--brand-name', 'Test Brand', '--screenshot', screenshot,
     '--audience', 'test audience', '--offer', 'Test offer', '--cta', 'Try it',
     '--out', out
   ], { encoding: 'utf8' });
@@ -125,6 +139,7 @@ test('rejects a logo output alias and preserves the source', async () => {
   temporaryDirectories.push(root);
   const logo = path.join(root, 'logo.png');
   const outputAlias = path.join(root, 'logo-output.png');
+  await writeFile(path.join(root, 'screenshot.png'), 'PNG-SOURCE');
   await writeFile(logo, 'LOGO-SOURCE');
   await link(logo, outputAlias);
 

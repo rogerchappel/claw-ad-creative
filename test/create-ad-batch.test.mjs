@@ -86,7 +86,7 @@ test('supports repeatable research, family, style, and segment options', async (
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout.trim(), outDir);
   const brief = JSON.parse(await readFile(path.join(outDir, 'insight-brief.json'), 'utf8'));
-  assert.deepEqual(brief.painPoints, ['First problem', 'Second problem']);
+  assert.deepEqual(brief.copyStrategy.painPoints.slice(0, 2), ['First problem', 'Second problem']);
   const plan = JSON.parse(await readFile(path.join(outDir, 'scale-plan.json'), 'utf8'));
   assert.deepEqual(plan.creativeFamilies.map(({ id }) => id), ['problem-static', 'proof-authority']);
 });

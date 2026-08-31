@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const supportedOptions = new Set([
@@ -24,6 +24,13 @@ const cta = required(args, 'cta');
 const screenshots = asArray(args.screenshot);
 if (screenshots.length === 0) {
   fail('missing required --screenshot path');
+}
+
+for (const screenshot of screenshots) {
+  assertReadableRegularFile(screenshot, '--screenshot');
+}
+if (args.logo) {
+  assertReadableRegularFile(args.logo, '--logo');
 }
 
 if (args.out) {
@@ -228,6 +235,20 @@ function assertDistinctOutput(output, sourceAssets) {
   }
 }
 
+function assertReadableRegularFile(source, option) {
+  if (!existsSync(source)) {
+    fail(`${option} source asset does not exist: ${source}`);
+  }
+  if (!statSync(source).isFile()) {
+    fail(`${option} source asset is not a regular file: ${source}`);
+  }
+  try {
+    accessSync(source, constants.R_OK);
+  } catch {
+    fail(`${option} source asset is not readable: ${source}`);
+  }
+}
+
 function existingFilesMatch(left, right) {
   if (!existsSync(left) || !existsSync(right)) return false;
   const leftStat = statSync(left);
@@ -268,6 +289,7 @@ Optional:
 
 Validation:
   All options except --screenshot are scalar and may be specified only once.
+  Every --screenshot and optional --logo must exist, be readable, and be a regular file.
   Unknown long options are rejected before the output file is created.
   --out must not alias a --screenshot or --logo source asset.
   --out creates missing parent directories before writing the prompt pack.

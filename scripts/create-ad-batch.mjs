@@ -9,6 +9,11 @@ const supportedOptions = new Set([
   'landing-page', 'publish-mode', 'out-dir', 'scale-profile', 'ad-set-strategy',
   'creative-family', 'creative-style', 'audience-segment'
 ]);
+const repeatableOptions = new Set([
+  'research-source', 'research-note', 'competitor', 'pain-point', 'outcome',
+  'objection', 'proof', 'vocabulary', 'creative-family', 'creative-style',
+  'audience-segment'
+]);
 
 const args = parseArgs(process.argv.slice(2));
 
@@ -1953,10 +1958,12 @@ function parseArgs(argv) {
 
     if (parsed[key] === undefined) {
       parsed[key] = value;
-    } else if (Array.isArray(parsed[key])) {
+    } else if (repeatableOptions.has(key) && Array.isArray(parsed[key])) {
       parsed[key].push(value);
-    } else {
+    } else if (repeatableOptions.has(key)) {
       parsed[key] = [parsed[key], value];
+    } else {
+      fail(`option may only be specified once: --${key}`);
     }
 
     i += 1;
@@ -2012,6 +2019,8 @@ Optional batch fields:
 
 Batch constraints:
   Unknown long options are rejected before any output is created.
+  Research inputs, --creative-family, --creative-style, and --audience-segment
+  may be repeated. Every other option is scalar and may be specified only once.
   --count must be a positive whole number (for example, 20)
   --formats must contain at least one non-empty comma-separated value
 
