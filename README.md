@@ -231,6 +231,7 @@ npm run creative:batch -- \
 
 Research note files may include labelled lines such as `Pain: ...`,
 `Outcome: ...`, `Objection: ...`, `Proof: ...`, and `Vocabulary: ...`.
+Each `--research-note` value must name an existing, readable regular file.
 All research inputs and the `--creative-family`, `--creative-style`, and
 `--audience-segment` options may be repeated. Every other batch option is
 scalar; duplicate scalar options are rejected before the output directory is
