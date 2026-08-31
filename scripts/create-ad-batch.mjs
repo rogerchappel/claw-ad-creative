@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const supportedOptions = new Set([
@@ -1606,10 +1606,7 @@ Human approval required before any of:
 
 function collectResearchInputs(source) {
   const researchNoteFiles = asArray(source['research-note']);
-  const researchNotes = researchNoteFiles.map((file) => ({
-    file,
-    text: readFileSync(file, 'utf8')
-  }));
+  const researchNotes = researchNoteFiles.map(readResearchNote);
 
   return {
     hasInputs:
@@ -1632,9 +1629,30 @@ function collectResearchInputs(source) {
   };
 }
 
+function readResearchNote(file) {
+  let stats;
+
+  try {
+    stats = statSync(file);
+  } catch {
+    fail(`--research-note file does not exist: ${file}`);
+  }
+
+  if (!stats.isFile()) {
+    fail(`--research-note path is not a regular file: ${file}`);
+  }
+
+  try {
+    accessSync(file, constants.R_OK);
+    return { file, text: readFileSync(file, 'utf8') };
+  } catch {
+    fail(`--research-note file is not readable: ${file}`);
+  }
+}
+
 function extractLabeledNotes(notes, label) {
   const matches = [];
-  const re = new RegExp(`^\\\\s*(?:[-*]\\\\s*)?${label}s?\\\\s*:\\\\s*(.+)$`, 'gim');
+  const re = new RegExp(`^\\s*(?:[-*]\\s*)?${label}s?\\s*:\\s*(.+)$`, 'gim');
 
   for (const note of notes) {
     for (const match of note.text.matchAll(re)) {
@@ -2021,6 +2039,7 @@ Batch constraints:
   Unknown long options are rejected before any output is created.
   Research inputs, --creative-family, --creative-style, and --audience-segment
   may be repeated. Every other option is scalar and may be specified only once.
+  Each --research-note must name an existing, readable regular file.
   --count must be a positive whole number (for example, 20)
   --formats must contain at least one non-empty comma-separated value
 
