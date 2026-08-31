@@ -65,8 +65,9 @@ option is scalar and duplicate scalar options are rejected without writing an
 output file. When `--out` names a path whose parent directories do not yet
 exist, the CLI creates them before writing the prompt pack. The output path
 must be distinct from every `--screenshot` and `--logo` source path; relative,
-absolute, symlink, and hard-link aliases are rejected before any write. Run the
-command with `--help` for the complete option list.
+absolute, symlink, and hard-link aliases are rejected before any write. Every
+screenshot and the optional logo must already exist as a readable regular
+file. Run the command with `--help` for the complete option list.
 
 The skill keeps `SKILL.md` lean and stores deeper guidance in `references/`.
 `skills/facebook-ad-creative/skill.json` adds the CrewCMD-style install
@@ -230,6 +231,10 @@ npm run creative:batch -- \
 
 Research note files may include labelled lines such as `Pain: ...`,
 `Outcome: ...`, `Objection: ...`, `Proof: ...`, and `Vocabulary: ...`.
+All research inputs and the `--creative-family`, `--creative-style`, and
+`--audience-segment` options may be repeated. Every other batch option is
+scalar; duplicate scalar options are rejected before the output directory is
+created.
 
 ## Repository Map
 
