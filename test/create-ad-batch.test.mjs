@@ -65,6 +65,32 @@ test('rejects an unknown long option before writing output', async () => {
   await assert.rejects(readFile(path.join(outDir, 'meta-draft-plan.json')), { code: 'ENOENT' });
 });
 
+test('rejects duplicate scalar options before creating the output directory', async () => {
+  const { outDir, result } = await runBatch(['--brand', 'Other Brand']);
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr, 'ERROR: option may only be specified once: --brand\nRun with --help for usage.\n');
+  await assert.rejects(readFile(path.join(outDir, 'brand-profile.json')), { code: 'ENOENT' });
+});
+
+test('supports repeatable research, family, style, and segment options', async () => {
+  const { outDir, result } = await runBatch([
+    '--count', '2',
+    '--pain-point', 'First problem', '--pain-point', 'Second problem',
+    '--creative-family', 'problem-static', '--creative-family', 'proof-authority',
+    '--creative-style', 'raw-screenshot', '--creative-style', 'operator-memo',
+    '--audience-segment', 'Core buyers', '--audience-segment', 'Warm visitors'
+  ]);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), outDir);
+  const brief = JSON.parse(await readFile(path.join(outDir, 'insight-brief.json'), 'utf8'));
+  assert.deepEqual(brief.painPoints, ['First problem', 'Second problem']);
+  const plan = JSON.parse(await readFile(path.join(outDir, 'scale-plan.json'), 'utf8'));
+  assert.deepEqual(plan.creativeFamilies.map(({ id }) => id), ['problem-static', 'proof-authority']);
+});
+
 test('generates the requested variants for a documented batch invocation', async () => {
   const { outDir, result } = await runBatch(['--count', '3', '--formats', '9:16,4:5,1:1']);
 

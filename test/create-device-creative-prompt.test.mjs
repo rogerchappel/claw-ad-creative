@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { link, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { link, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,9 +17,11 @@ async function runPrompt(extraArguments) {
   const root = await mkdtemp(path.join(tmpdir(), 'claw-device-prompt-test-'));
   temporaryDirectories.push(root);
   const out = path.join(root, 'prompt.json');
+  const screenshot = path.join(root, 'first.png');
+  await writeFile(screenshot, 'PNG-SOURCE');
   const result = spawnSync(process.execPath, [
     'scripts/create-device-creative-prompt.mjs',
-    '--brand-name', 'Test Brand', '--screenshot', '/tmp/first.png',
+    '--brand-name', 'Test Brand', '--screenshot', screenshot,
     '--audience', 'test audience', '--offer', 'Test offer', '--cta', 'Try it',
     '--out', out, ...extraArguments
   ], { encoding: 'utf8' });
@@ -36,17 +38,41 @@ test('rejects an unknown long option before writing output', async () => {
 });
 
 test('supports documented options and repeatable screenshots', async () => {
+  const assets = await mkdtemp(path.join(tmpdir(), 'claw-device-prompt-assets-test-'));
+  temporaryDirectories.push(assets);
+  const second = path.join(assets, 'second.png');
+  await writeFile(second, 'PNG-SOURCE-2');
   const { out, result } = await runPrompt([
-    '--screenshot', '/tmp/second.png', '--aspect-ratio', '9:16', '--provider', 'fal',
+    '--screenshot', second, '--aspect-ratio', '9:16', '--provider', 'fal',
     '--model', 'runtime-selected', '--style', 'editorial', '--device', 'iPhone'
   ]);
 
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout.trim(), out);
   const prompt = JSON.parse(await readFile(out, 'utf8'));
-  assert.deepEqual(prompt.product.screenshots, ['/tmp/first.png', '/tmp/second.png']);
+  assert.equal(prompt.product.screenshots.length, 2);
   assert.equal(prompt.asset.aspectRatio, '9:16');
   assert.equal(prompt.provider, 'fal');
+});
+
+test('rejects missing, unreadable, and non-regular source assets before creating output', async (t) => {
+  await t.test('missing screenshot', async () => {
+    const { out, result } = await runPrompt(['--screenshot', '/definitely/missing.png']);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /source asset does not exist/);
+    await assert.rejects(readFile(out), { code: 'ENOENT' });
+  });
+
+  await t.test('directory logo', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'claw-device-prompt-directory-test-'));
+    temporaryDirectories.push(root);
+    const logo = path.join(root, 'logo');
+    await mkdir(logo);
+    const { out, result } = await runPrompt(['--logo', logo]);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /source asset is not a regular file/);
+    await assert.rejects(readFile(out), { code: 'ENOENT' });
+  });
 });
 
 test('rejects duplicate scalar options before writing output', async () => {
