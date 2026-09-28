@@ -64,7 +64,7 @@ const skillJson = readJson('skills/facebook-ad-creative/skill.json');
 
 if (manifest && skillJson) {
   if (manifest.slug !== skillJson.slug) {
-    failures.push('manifest slug does not match skill.json slug');
+    failures.push(`manifest slug '${manifest.slug}' does not match skill.json slug '${skillJson.slug}'`);
   }
 
   if (!skillJson.metadata?.configSchema?.properties?.falSecretRef) {
