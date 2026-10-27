@@ -50,6 +50,16 @@ When running through CrewCMD/OpenClaw, store this as a vault secret and expose i
 through the skill assignment config rather than committing it to a local env
 file. See `docs/crewcmd-installation.md`.
 
+**Paid-inference boundary:** model discovery, schema inspection, and price checks
+are read-only preparation; submitting a generation request to `fal.run` (or an
+equivalent hosted inference tool) can incur charges. Do not invoke paid inference
+in unattended runs. Before each paid generation batch, show the human the
+provider/model, requested output count or duration, and the current price estimate
+and obtain explicit approval for that batch and its maximum spend. If pricing is
+unavailable or the estimate exceeds the approved cap, stop and ask again; do not
+assume a stored API key, prior approval, or an earlier price check authorizes
+spend. Keep generated outputs within the approved batch and cap.
+
 Use Higgsfield when the campaign needs polished short-form video or realistic
 UGC-style motion. Higgsfield's hosted MCP is URL/account-auth based; connect the
 server and sign in through the MCP client.

@@ -92,7 +92,7 @@ bash scripts/install-mcps.sh print-config
 
 Required vault secret for asset generation:
 
-- `fal-api-key` exposed as `FAL_KEY`
+- `fal-api-key` exposed as `FAL_KEY` (a credential is not spend approval)
 
 Optional vault secrets:
 
