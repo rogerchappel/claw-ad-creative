@@ -1,0 +1,72 @@
+{
+  "brand": {
+    "name": "Fieldbook",
+    "logo": "assets/logo.png",
+    "logoDark": "assets/logo-white.png",
+    "logoSquare": "assets/logo-square.png",
+    "badge": "assets/app-store-badge.svg",
+    "colors": { "primary": "#2b4c7e", "deep": "#14243d", "accent": "#ffd166", "light": "#eef2f8", "ink": "#101828" },
+    "fonts": [{ "family": "Inter", "file": "assets/Inter-Bold.ttf", "weight": 800, "role": "display" }]
+  },
+  "defaults": {
+    "cta": "Get the free app",
+    "metaCta": "INSTALL_MOBILE_APP",
+    "description": "Free on iPhone and iPad",
+    "formats": ["4:5", "9:16", "1:1"],
+    "url": "https://example.com/app",
+    "utm": { "source": "meta", "medium": "paid_social", "campaign": "app_launch" }
+  },
+  "assets": {
+    "home": "assets/screenshot-home.png",
+    "field": "assets/field-photo.jpg"
+  },
+  "creatives": [
+    {
+      "id": "a1-device", "adSet": "a-core-benefit", "family": "free-tool-funnel", "style": "polished-product", "template": "device",
+      "screenshot": "home", "eyebrow": "Free on iPhone & iPad", "headline": "Every site visit, *in one list.*",
+      "primaryText": "Log every site visit in seconds and find it again later. Free on iPhone and iPad.",
+      "hypothesis": "Clear product promise with real UI is the baseline."
+    },
+    {
+      "id": "a2-photo", "adSet": "a-core-benefit", "family": "native-ugc-demo", "style": "field-notes", "template": "photo",
+      "background": "field", "focus": "center 40%", "headline": "Log it *before you leave the site.*",
+      "primaryText": "The best time to write it down is while you're still there.",
+      "hypothesis": "Real-world scene reads as native content."
+    },
+    {
+      "id": "a3-notes", "adSet": "a-core-benefit", "family": "problem-static", "style": "ugly-checklist", "template": "notes",
+      "notesLabel": "Monday", "headline": "Site visits",
+      "items": [{ "text": "Visit 6 sites", "done": true }, { "text": "Remember what I saw at site 2", "done": false }, { "text": "Get a better app", "done": true }],
+      "primaryText": "If your Monday list looks like this, start with the last item."
+    },
+    {
+      "id": "a4-thread", "adSet": "a-core-benefit", "family": "native-text-story", "style": "text-message-thread", "template": "thread",
+      "threadLabel": "Today 9:12 AM", "headline": "Sound familiar?",
+      "messages": [{ "from": "them", "text": "Which site had the cracked slab?" }, { "from": "me", "text": "Checking my notes…" }, { "from": "me", "image": "home" }],
+      "primaryText": "Notes that are easy to find beat notes that are easy to lose."
+    },
+    {
+      "id": "b1-post", "adSet": "b-objections", "family": "native-text-story", "style": "wall-of-text", "template": "post",
+      "headline": "Where do your site notes actually live?",
+      "paragraphs": ["Camera roll. Three group chats. A notebook in the ute.", "We built a free app that keeps the notes, photos and checklist together."],
+      "primaryText": "Camera roll, group chats, a notebook in the ute. Keep it in one place."
+    },
+    {
+      "id": "b2-screenshot", "adSet": "b-objections", "family": "phone-demo-video", "style": "raw-screenshot", "template": "screenshot",
+      "screenshot": "home", "headline": "POV: every visit from this month, already sorted.",
+      "primaryText": "Log as you go. The list sorts itself."
+    },
+    {
+      "id": "b3-compare", "adSet": "b-objections", "family": "comparison", "style": "contrarian-take", "template": "compare",
+      "headline": "Your notebook, *upgraded.*",
+      "left": { "title": "Notebook", "items": ["Pages get wet", "Photos live elsewhere"] },
+      "right": { "title": "Fieldbook", "items": ["Notes and photos together", "Searchable later"] },
+      "primaryText": "Keep the notebook if you love it. Add the bit it can't do."
+    },
+    {
+      "id": "b4-statement", "adSet": "b-objections", "family": "objection-handling", "style": "operator-memo", "template": "statement",
+      "headline": "6 sites.\n1 day.\n*1 list.*", "body": "Free on iPhone and iPad.",
+      "primaryText": "Busy days don't get shorter. Your notes can."
+    }
+  ]
+}
