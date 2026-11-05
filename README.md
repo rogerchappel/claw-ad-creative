@@ -76,6 +76,28 @@ the UI instead of pasted into prompts or config files.
 
 For installable setup details, see `docs/crewcmd-installation.md`.
 
+### Render CLI
+
+`npm run creative:render -- --job path/to/render-job.json` turns a JSON job
+(brand profile, local screenshots and photos, and a list of creatives) into
+finished ad images at 1:1, 4:5, and 9:16, with Stories and Reels safe zones.
+It also writes `manifest.json`, a `meta-copy.csv` with one row per file
+(ad set, ad name, primary text, headline, CTA, UTM link), and a
+`contact-sheet.html` grouped by ad set for review.
+
+Each creative picks one of eight visual styles: `device`, `photo`, `post`,
+`thread`, `notes`, `screenshot`, `compare`, and `statement`. Mixing styles
+inside every ad set gives Meta's delivery system genuinely different creatives
+to choose between, instead of near-duplicates it treats as one ad. See
+`examples/render-job.example.json` for the job shape and
+`skills/facebook-ad-creative/references/asset-generation.md` for how to plan a
+batch.
+
+Rendering uses a local Chrome or Chromium (`--chrome`, `CHROME_PATH`, common
+install paths, or the Playwright browser cache). `--html-only` skips
+screenshots. The command never calls Meta or an image model, and it only
+renders the copy and assets you put in the job.
+
 ## Install Setup
 
 Check local prerequisites:
