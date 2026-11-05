@@ -179,6 +179,30 @@ Generate variants deliberately:
 
 Do not generate dozens of random assets. Each variant should test a hypothesis.
 
+## Style Diversity Per Ad Set
+
+Meta's delivery system groups creatives that look alike and lets them compete
+for the same auctions. A batch of ten ads that only swap headlines on one
+template behaves like one or two ads. To give the system real options, which
+is what lowers CPM and CPA over time:
+
+- Put 4 to 6 creatives in each ad set, using at least 4 different visual
+  styles (for example `device`, `photo`, `notes`, `thread`, `statement`).
+- Vary the first frame, not just the words: colour field, photo vs UI, light
+  vs dark, text-led vs image-led.
+- Include native, low-production styles (`post`, `notes`, `thread`,
+  `screenshot`). They look like organic feed content and often earn cheaper
+  impressions than polished brand cards.
+- Give each ad set one angle (for example core benefit, team workflow, record
+  keeping, objection handling) so results tell you which message works.
+- Record a hypothesis per creative and keep the ad name stable
+  (`adSet__id__format`) so reporting can join results back to the job.
+- Never fabricate testimonials, reviews, customer names, or results in
+  `thread` or `post` creatives. Use scenarios the audience will recognise.
+
+`npm run creative:render` produces the files, copy CSV, and contact sheet from
+one job file, so a 30-concept, three-format batch is one command.
+
 ## Review Checklist
 
 Reject assets that:
