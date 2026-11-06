@@ -85,11 +85,13 @@ It also writes `manifest.json`, a `meta-copy.csv` with one row per file
 (ad set, ad name, primary text, headline, CTA, UTM link), and a
 `contact-sheet.html` grouped by ad set for review.
 
-Each creative picks one of thirteen visual styles: `device`, `photo`, `post`,
+Each creative picks one of sixteen visual styles: `device`, `photo`, `post`,
 `thread`, `notes`, `screenshot`, `compare`, `statement`, `scorecard`, `poll`,
-`search`, `ticket`, and `calendar`. Native-looking styles (`post`, `thread`,
-`notes`, `poll`) show only a small logo by default because Meta adds its own
-CTA button; set `"footer": "full"`, `"logo"` or `"none"` on a creative to
+`search`, `ticket`, `calendar`, `status` (big text on a coloured background,
+like a text-only post), `caption` (plain caption bar above a photo) and
+`sticky` (handwritten sticky note). Native-looking styles (`post`, `thread`,
+`notes`, `poll`, `status`, `caption`, `sticky`) show a small logo or nothing by
+default because Meta adds its own CTA button; set `"footer": "full"`, `"logo"` or `"none"` on a creative to
 override. `scorecard` builds a readable product list in HTML, which reads
 better at feed size than a shrunk screenshot. Mixing styles
 inside every ad set gives Meta's delivery system genuinely different creatives
