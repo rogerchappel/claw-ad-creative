@@ -23,7 +23,12 @@ const templates = {
   notes: renderNotes,
   screenshot: renderScreenshot,
   compare: renderCompare,
-  statement: renderStatement
+  statement: renderStatement,
+  scorecard: renderScorecard,
+  poll: renderPoll,
+  search: renderSearch,
+  ticket: renderTicket,
+  calendar: renderCalendar
 };
 
 const args = parseArgs(process.argv.slice(2));
@@ -135,11 +140,12 @@ html,body{width:var(--w);height:var(--h);overflow:hidden}
 body{font-family:var(--text);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
 .frame{position:relative;width:100%;height:100%;padding:calc(var(--safe-top) + 24px) 72px calc(var(--safe-bottom) + 24px);display:flex;flex-direction:column}
 h1{font-family:var(--display);font-weight:800;letter-spacing:-0.02em;line-height:1.02}
-h1 em{font-style:normal;color:var(--accent)}
+em{font-style:normal}
+h1 em{color:var(--accent)}
 .eyebrow{font-weight:700;text-transform:uppercase;letter-spacing:.14em;font-size:26px;opacity:.75;margin-bottom:22px}
 .body{font-size:34px;line-height:1.35;margin-top:24px;opacity:.85}
 .logo{height:56px;width:auto;max-width:min(520px,100%);object-fit:contain;object-position:left center;display:block;align-self:flex-start}
-.on-light h1 em{color:var(--primary)}
+.on-light em,.on-light h1 em{color:var(--primary)}
 .slot{position:relative}
 .slot>*{position:absolute;inset:0;margin:auto}
 .brandline{display:flex;align-items:center;gap:16px;font-weight:700;font-size:30px}
@@ -177,53 +183,54 @@ function renderPhoto(c, format) {
   const photo = asset(c.background, 'background', c.id);
   const square = format.height === format.width;
   return `<img src="${photo}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${c.focus ?? 'center'}">
-<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,18,14,.55) 0%,rgba(6,18,14,0) 28%,rgba(6,18,14,0) 42%,rgba(6,18,14,.88) 78%)"></div>
+<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,18,14,.6) 0%,rgba(6,18,14,0) 22%,rgba(6,18,14,0) 34%,rgba(6,18,14,.82) 58%,rgba(6,18,14,.95) 100%)"></div>
 <div class="frame" style="color:#fff">${logoLine(true)}
 <div style="margin-top:auto">${c.eyebrow ? `<div class="eyebrow">${esc(c.eyebrow)}</div>` : ''}<h1 style="font-size:${square ? 78 : 96}px;text-shadow:0 4px 30px rgba(0,0,0,.35)">${markup(c.headline)}</h1>${c.body ? `<p class="body" style="opacity:.92">${markup(c.body)}</p>` : ''}</div>
 ${ctaRow()}</div>`;
 }
 
 function renderPost(c, format) {
-  const square = format.height === format.width;
   const paragraphs = (c.paragraphs ?? [c.body]).filter(Boolean);
-  return `<div class="frame" style="background:${c.theme === 'dark' ? '#111614' : '#fff'};color:${c.theme === 'dark' ? '#f2f5f3' : '#111'}">
-<div style="display:flex;align-items:center;gap:20px">${brand.logoSquare ? `<img src="${brand.logoSquare}" style="width:84px;height:84px;border-radius:50%">` : ''}<div><div style="font-weight:700;font-size:32px">${esc(brand.name)}</div><div style="font-size:26px;opacity:.55">${esc(c.byline ?? 'A note for the people who do this every week')}</div></div></div>
-<h1 style="font-family:var(--text);font-weight:800;font-size:${square ? 58 : 76}px;line-height:1.12;margin-top:48px">${markup(c.headline)}</h1>
-${paragraphs.map((text) => `<p style="font-size:${square ? 32 : 42}px;line-height:1.42;margin-top:30px;opacity:.86">${markup(text)}</p>`).join('')}
-<div style="margin-top:auto;padding-top:28px;font-size:32px;font-weight:700;color:${c.theme === 'dark' ? 'var(--accent)' : 'var(--primary)'}">${esc(c.cta ?? defaults.cta ?? '')} →</div></div>`;
+  const dark = c.theme === 'dark';
+  return `<div class="frame" style="background:${dark ? '#111614' : '#fff'};color:${dark ? '#f2f5f3' : '#111'}">
+<div style="display:flex;align-items:center;gap:20px">${brand.logoSquare ? `<img src="${brand.logoSquare}" style="width:${pick(format, 84, 96, 104)}px;height:${pick(format, 84, 96, 104)}px;border-radius:50%">` : ''}<div><div style="font-weight:700;font-size:${pick(format, 32, 36, 40)}px">${esc(brand.name)}</div><div style="font-size:${pick(format, 26, 28, 30)}px;opacity:.55">${esc(c.byline ?? 'A note for the people who do this every week')}</div></div></div>
+<div style="margin:auto 0">
+<h1 style="font-family:var(--text);font-weight:800;font-size:${pick(format, 64, 86, 96)}px;line-height:1.1">${markup(c.headline)}</h1>
+${paragraphs.map((text) => `<p style="font-size:${pick(format, 36, 46, 52)}px;line-height:1.4;margin-top:${pick(format, 26, 36, 44)}px;opacity:.86">${markup(text)}</p>`).join('')}
+</div>${footer(c, 'logo', !dark)}</div>`;
 }
 
 function renderThread(c, format) {
   const messages = c.messages ?? [];
-  const square = format.height === format.width;
-  const size = square ? 32 : 38;
-  return `<div class="frame" style="background:#fff;padding-left:56px;padding-right:56px">
-${c.headline ? `<h1 style="font-size:${square ? 54 : 66}px;color:var(--ink);margin-bottom:30px">${markup(c.headline)}</h1>` : ''}
-<div style="text-align:center;font-size:24px;color:#8a8f8d;margin-bottom:22px">${esc(c.threadLabel ?? 'Sale day')}</div>
-<div style="display:flex;flex-direction:column;gap:16px">
+  const size = pick(format, 34, 44, 50);
+  return `<div class="frame on-light" style="background:#fff;padding-left:56px;padding-right:56px">
+${c.headline ? `<h1 style="font-size:${pick(format, 56, 72, 84)}px;color:var(--ink);margin-bottom:30px">${markup(c.headline)}</h1>` : ''}
+<div style="margin:auto 0"><div style="text-align:center;font-size:${pick(format, 24, 28, 32)}px;color:#8a8f8d;margin-bottom:22px">${esc(c.threadLabel ?? 'Sale day')}</div>
+<div style="display:flex;flex-direction:column;gap:${pick(format, 14, 18, 22)}px">
 ${messages.map((message) => {
     const mine = message.from === 'me';
     if (message.image) {
-      return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'};width:${square ? 360 : 460}px;height:${square ? 280 : 400}px;border-radius:28px;overflow:hidden"><img src="${asset(message.image, 'message image', c.id)}" style="width:100%;height:100%;object-fit:cover;object-position:${message.crop ?? 'top center'}"></div>`;
+      return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'};width:${pick(format, 400, 560, 640)}px;height:${pick(format, 300, 420, 560)}px;border-radius:28px;overflow:hidden;border:2px solid #e5e5ea"><img src="${asset(message.image, 'message image', c.id)}" style="width:100%;height:100%;object-fit:cover;object-position:${message.crop ?? 'top center'}"></div>`;
     }
-    return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'};max-width:78%;background:${mine ? '#0a84ff' : '#e9e9eb'};color:${mine ? '#fff' : '#111'};font-size:${size}px;line-height:1.3;padding:20px 28px;border-radius:36px;${mine ? 'border-bottom-right-radius:10px' : 'border-bottom-left-radius:10px'}">${markup(message.text ?? '')}</div>`;
+    return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'};max-width:78%;background:${mine ? '#0a84ff' : '#e9e9eb'};color:${mine ? '#fff' : '#111'};font-size:${size}px;line-height:1.3;padding:${pick(format, 20, 24, 28)}px ${pick(format, 28, 34, 38)}px;border-radius:40px;${mine ? 'border-bottom-right-radius:10px' : 'border-bottom-left-radius:10px'}">${markup(message.text ?? '')}</div>`;
   }).join('\n')}
-</div>${ctaRow(false, true)}</div>`;
+</div></div>${footer(c, 'logo', true)}</div>`;
 }
 
 function renderNotes(c, format) {
-  const square = format.height === format.width;
   const items = c.items ?? [];
-  return `<div class="frame" style="background:#fffbea;background-image:repeating-linear-gradient(180deg,transparent 0 ${square ? 63 : 75}px,#efe6c4 ${square ? 63 : 75}px ${square ? 65 : 77}px);color:#2b2a26">
-<div style="font-size:26px;color:#c39b00;font-weight:600;margin-bottom:18px">${esc(c.notesLabel ?? 'Notes')}</div>
-<h1 style="font-family:var(--text);font-weight:800;font-size:${square ? 60 : 74}px;line-height:1.08">${markup(c.headline)}</h1>
-<div style="margin-top:34px;display:flex;flex-direction:column;gap:${square ? 14 : 22}px">
+  const line = pick(format, 64, 80, 92);
+  const box = pick(format, 44, 58, 66);
+  return `<div class="frame on-light" style="background:#fffbea;background-image:repeating-linear-gradient(180deg,transparent 0 ${line - 2}px,#efe6c4 ${line - 2}px ${line}px);color:#2b2a26">
+<div style="margin:auto 0"><div style="font-size:${pick(format, 28, 34, 38)}px;color:#c39b00;font-weight:600;margin-bottom:18px">${esc(c.notesLabel ?? 'Notes')}</div>
+<h1 style="font-family:var(--text);font-weight:800;font-size:${pick(format, 68, 92, 104)}px;line-height:1.05">${markup(c.headline)}</h1>
+<div style="padding-top:${pick(format, 30, 48, 56)}px;display:flex;flex-direction:column;gap:${pick(format, 18, 30, 40)}px">
 ${items.map((item) => {
     const done = typeof item === 'object' && item.done;
     const text = typeof item === 'object' ? item.text : item;
-    return `<div style="display:flex;gap:22px;align-items:flex-start;font-size:${square ? 34 : 42}px;line-height:1.3"><span style="flex:none;width:${square ? 40 : 48}px;height:${square ? 40 : 48}px;border-radius:50%;border:3px solid ${done ? '#e0a800' : '#b9b3a0'};background:${done ? '#e0a800' : 'transparent'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${square ? 26 : 32}px;margin-top:4px">${done ? '✓' : ''}</span><span style="${done ? '' : ''}">${markup(text)}</span></div>`;
+    return `<div style="display:flex;gap:26px;align-items:flex-start;font-size:${pick(format, 40, 54, 60)}px;line-height:1.25"><span style="flex:none;width:${box}px;height:${box}px;border-radius:50%;border:4px solid ${done ? '#e0a800' : '#b9b3a0'};background:${done ? '#e0a800' : 'transparent'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.round(box * 0.62)}px;margin-top:4px">${done ? '✓' : ''}</span><span>${markup(text)}</span></div>`;
   }).join('\n')}
-</div>${ctaRow(false, true)}</div>`;
+</div></div>${footer(c, 'logo', true)}</div>`;
 }
 
 function renderScreenshot(c, format) {
@@ -237,12 +244,12 @@ function renderCompare(c, format) {
   const square = format.height === format.width;
   const left = c.left ?? { title: 'Before', items: [] };
   const right = c.right ?? { title: brand.name, items: [] };
-  const column = (side, good) => `<div style="flex:1;border-radius:32px;padding:${square ? 30 : 40}px;background:${good ? 'var(--deep)' : '#eef0ef'};color:${good ? '#fff' : '#3b4240'}">
-<div style="font-weight:800;font-size:${square ? 34 : 40}px;margin-bottom:${square ? 18 : 28}px">${esc(side.title)}</div>
-${side.items.map((item) => `<div style="display:flex;gap:16px;font-size:${square ? 28 : 34}px;line-height:1.3;margin-top:${square ? 12 : 20}px"><span style="flex:none;font-weight:800;color:${good ? 'var(--accent)' : '#c0392b'}">${good ? '✓' : '✕'}</span><span>${markup(item)}</span></div>`).join('')}</div>`;
-  return `<div class="frame" style="background:#fff">
-${logoLine(false)}<h1 style="font-size:${square ? 64 : 84}px;margin:30px 0 ${square ? 30 : 44}px;color:var(--ink)">${markup(c.headline)}</h1>
-<div style="display:flex;gap:24px;${square ? '' : 'flex-direction:column'}">${column(left, false)}${column(right, true)}</div>${ctaRow(false)}</div>`;
+  const column = (side, good) => `<div style="flex:1;border-radius:32px;padding:${pick(format, 30, 40, 48)}px;background:${good ? 'var(--deep)' : '#eef0ef'};color:${good ? '#fff' : '#3b4240'}">
+<div style="font-weight:800;font-size:${pick(format, 34, 42, 48)}px;margin-bottom:${square ? 18 : 28}px">${esc(side.title)}</div>
+${side.items.map((item) => `<div style="display:flex;gap:16px;font-size:${pick(format, 28, 36, 42)}px;line-height:1.3;margin-top:${square ? 12 : 20}px"><span style="flex:none;font-weight:800;color:${good ? 'var(--accent)' : '#c0392b'}">${good ? '✓' : '✕'}</span><span>${markup(item)}</span></div>`).join('')}</div>`;
+  return `<div class="frame on-light" style="background:#fff">
+${logoLine(false)}<h1 style="font-size:${pick(format, 64, 84, 96)}px;margin:30px 0 ${square ? 30 : 44}px;color:var(--ink)">${markup(c.headline)}</h1>
+<div style="display:flex;gap:24px;${square ? '' : 'flex-direction:column;margin:auto 0'}">${column(left, false)}${column(right, true)}</div>${footer(c, 'full', true)}</div>`;
 }
 
 function renderStatement(c, format) {
@@ -255,6 +262,92 @@ ${c.body ? `<p class="body" style="font-size:${square ? 34 : 40}px">${markup(c.b
 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:${square ? 60 : 90}px">${logoLine(dark)}${c.showCta === false ? '' : `<span style="font-weight:800;font-size:34px">${esc(c.cta ?? defaults.cta ?? '')} →</span>`}</div></div>`;
 }
 
+function renderScorecard(c, format) {
+  const dark = c.theme === 'dark';
+  const lots = c.lots ?? [];
+  const tone = (score) => (score >= 8 ? 'var(--primary)' : score >= 5 ? '#d99a00' : '#9aa19e');
+  const row = (lot, index) => `<div style="display:flex;align-items:center;gap:${pick(format, 20, 26, 30)}px;background:#fff;color:#111;border-radius:${pick(format, 22, 28, 32)}px;padding:${pick(format, 18, 26, 30)}px ${pick(format, 24, 30, 34)}px;box-shadow:0 10px 30px rgba(0,0,0,.12)${index === 0 && c.highlightFirst !== false ? ';outline:5px solid var(--accent)' : ''}">
+<div style="flex:none;font-weight:800;font-size:${pick(format, 26, 30, 34)}px;color:#6b7370;width:${pick(format, 110, 130, 150)}px">${esc(lot.lot ? `Lot ${lot.lot}` : '')}</div>
+<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:${pick(format, 32, 40, 46)}px;line-height:1.15">${markup(lot.label ?? '')}${lot.star ? ' <span style="color:#e0a800">★</span>' : ''}</div>
+${lot.tags?.length ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">${lot.tags.map((tag) => `<span style="font-size:${pick(format, 20, 24, 27)}px;font-weight:700;color:var(--primary);background:var(--light);border-radius:999px;padding:6px 14px">✓ ${esc(tag)}</span>`).join('')}</div>` : ''}</div>
+${lot.score !== undefined ? `<div style="flex:none;min-width:${pick(format, 96, 116, 128)}px;text-align:center;font-weight:800;font-size:${pick(format, 40, 50, 56)}px;color:#fff;background:${tone(Number(lot.score))};border-radius:${pick(format, 18, 22, 24)}px;padding:${pick(format, 10, 14, 16)}px 0">${esc(Number(lot.score).toFixed(1))}</div>` : ''}</div>`;
+  return `<div class="frame${dark ? '' : ' on-light'}" style="background:${dark ? 'radial-gradient(120% 80% at 80% 100%, var(--primary) 0%, var(--deep) 60%)' : 'var(--light)'};color:${dark ? '#fff' : 'var(--ink)'}">
+${logoLine(dark)}${c.eyebrow ? `<div class="eyebrow" style="margin-top:32px">${esc(c.eyebrow)}</div>` : ''}<h1 style="font-size:${pick(format, 66, 86, 96)}px;${c.eyebrow ? '' : 'margin-top:32px'}">${markup(c.headline)}</h1>
+<div style="margin:auto 0;padding-top:${pick(format, 24, 36, 44)}px">${c.listLabel ? `<div style="font-weight:700;font-size:${pick(format, 24, 28, 32)}px;opacity:.7;margin-bottom:16px">${esc(c.listLabel)}</div>` : ''}<div style="display:flex;flex-direction:column;gap:${pick(format, 12, 18, 22)}px">${lots.slice(0, pick(format, 3, 4, 5)).map(row).join('')}</div></div>
+${footer(c, 'full', !dark, false, true)}</div>`;
+}
+
+function renderPoll(c, format) {
+  const photo = c.background ? asset(c.background, 'background', c.id) : null;
+  const options = c.options ?? ['Yes', 'No'];
+  return `${photo ? `<img src="${photo}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${c.focus ?? 'center'}"><div style="position:absolute;inset:0;background:rgba(6,18,14,.45)"></div>` : ''}
+<div class="frame" style="${photo ? '' : 'background:linear-gradient(160deg,var(--primary),var(--deep))'};color:#fff;align-items:center;text-align:center">
+${c.headline ? `<h1 style="font-size:${pick(format, 60, 78, 88)}px;text-shadow:0 4px 30px rgba(0,0,0,.35)">${markup(c.headline)}</h1>` : ''}
+<div style="margin:auto 0;width:${pick(format, 760, 860, 900)}px;background:#fff;color:#111;border-radius:40px;padding:${pick(format, 34, 44, 52)}px;box-shadow:0 30px 80px rgba(0,0,0,.35)">
+<div style="font-family:var(--display);font-weight:800;font-size:${pick(format, 44, 54, 60)}px;line-height:1.12;margin-bottom:${pick(format, 26, 34, 40)}px">${markup(c.question ?? '')}</div>
+${options.map((option) => `<div style="border:3px solid #e3e6e5;border-radius:999px;padding:${pick(format, 20, 26, 30)}px;font-weight:800;font-size:${pick(format, 34, 42, 46)}px;margin-top:${pick(format, 14, 18, 22)}px;color:var(--deep)">${markup(option)}</div>`).join('')}
+</div>
+${c.body ? `<p class="body" style="font-weight:700;margin:0 0 ${pick(format, 20, 30, 36)}px;text-shadow:0 2px 20px rgba(0,0,0,.35)">${markup(c.body)}</p>` : ''}
+<div style="align-self:stretch">${footer(c, 'logo', false)}</div></div>`;
+}
+
+function renderSearch(c, format) {
+  const suggestions = c.suggestions ?? [];
+  const icon = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>`;
+  return `<div class="frame on-light" style="background:#fff">
+${c.headline ? `<h1 style="font-size:${pick(format, 62, 80, 92)}px;color:var(--ink)">${markup(c.headline)}</h1>` : ''}
+<div style="margin:auto 0">
+<div style="display:flex;align-items:center;gap:22px;border-radius:999px;box-shadow:0 6px 28px rgba(0,0,0,.14);border:2px solid #e6e8e7;padding:${pick(format, 24, 30, 34)}px ${pick(format, 34, 40, 44)}px;font-size:${pick(format, 36, 44, 50)}px;color:#202124"><span style="color:#8a8f8d;display:flex">${icon}</span><span>${esc(c.query ?? '')}<span style="display:inline-block;width:4px;height:1.1em;background:#1a73e8;vertical-align:-0.15em;margin-left:4px"></span></span></div>
+<div style="margin-top:14px;border-radius:32px;border:2px solid #eceeed;padding:${pick(format, 10, 16, 20)}px 0">
+${suggestions.map((text) => `<div style="display:flex;align-items:center;gap:22px;padding:${pick(format, 14, 20, 24)}px ${pick(format, 34, 40, 44)}px;font-size:${pick(format, 32, 40, 46)}px;color:#3c4043"><span style="color:#9aa0a6;display:flex">${icon}</span><span>${markup(text)}</span></div>`).join('')}
+</div>
+${c.body ? `<p style="font-family:var(--display);font-weight:800;font-size:${pick(format, 46, 60, 68)}px;line-height:1.1;margin-top:${pick(format, 34, 50, 60)}px;color:var(--ink)">${markup(c.body)}</p>` : ''}
+</div>${footer(c, 'full', true)}</div>`;
+}
+
+function renderTicket(c, format) {
+  const fields = c.fields ?? [];
+  const code = (value, city) => `<div><div style="font-family:var(--display);font-weight:800;font-size:${pick(format, 104, 128, 140)}px;line-height:1;color:var(--deep)">${esc(value)}</div><div style="font-size:${pick(format, 26, 30, 34)}px;color:#6b7370;margin-top:8px">${esc(city ?? '')}</div></div>`;
+  return `<div class="frame" style="background:radial-gradient(120% 80% at 20% 0%, var(--primary) 0%, var(--deep) 65%);color:#fff">
+${c.headline ? `<h1 style="font-size:${pick(format, 66, 86, 96)}px">${markup(c.headline)}</h1>` : ''}
+<div style="margin:auto 0;background:#fff;color:#111;border-radius:36px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4)">
+<div style="background:var(--accent);color:var(--deep);font-weight:800;font-size:${pick(format, 24, 28, 30)}px;letter-spacing:.16em;text-transform:uppercase;padding:18px 40px">${esc(c.passLabel ?? 'Boarding pass')}</div>
+<div style="padding:${pick(format, 30, 40, 46)}px 40px;display:flex;align-items:center;justify-content:space-between">${code(c.from ?? '', c.fromCity)}<div style="font-size:${pick(format, 52, 64, 70)}px;color:var(--primary)">✈</div><div style="text-align:right">${code(c.to ?? '', c.toCity).replace('<div>', '<div style="text-align:right">')}</div></div>
+<div style="display:grid;grid-template-columns:repeat(${Math.min(fields.length || 1, 3)},1fr);gap:20px;padding:0 40px ${pick(format, 30, 36, 40)}px">${fields.map((field) => `<div><div style="font-size:${pick(format, 20, 24, 26)}px;text-transform:uppercase;letter-spacing:.1em;color:#8a8f8d">${esc(field.label)}</div><div style="font-weight:800;font-size:${pick(format, 32, 38, 42)}px;margin-top:6px">${markup(field.value)}</div></div>`).join('')}</div>
+${c.stub ? `<div style="border-top:4px dashed #dfe3e1;padding:${pick(format, 24, 30, 34)}px 40px;font-weight:800;font-size:${pick(format, 30, 36, 38)}px;color:var(--primary)">${markup(c.stub)}</div>` : ''}
+</div>
+${c.body ? `<p class="body" style="margin:0 0 10px">${markup(c.body)}</p>` : ''}${footer(c, 'full', false)}</div>`;
+}
+
+function renderCalendar(c, format) {
+  const items = c.items ?? [];
+  return `<div class="frame on-light" style="background:var(--light);color:var(--ink)">
+${c.headline ? `<h1 style="font-size:${pick(format, 64, 84, 94)}px">${markup(c.headline)}</h1>` : ''}
+<div style="margin:auto 0;display:flex;${format.width === format.height ? 'gap:40px;align-items:center' : 'flex-direction:column;gap:40px;align-items:center'}">
+<div style="flex:none;width:${pick(format, 400, 440, 480)}px;background:#fff;border-radius:44px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.18);text-align:center">
+<div style="background:#e5484d;color:#fff;font-weight:800;font-size:${pick(format, 40, 50, 56)}px;letter-spacing:.12em;padding:${pick(format, 18, 24, 26)}px 0">${esc(c.month ?? '')}</div>
+<div style="font-family:var(--display);font-weight:800;font-size:${pick(format, 210, 220, 240)}px;line-height:1.05;color:#111">${esc(c.day ?? '')}</div>
+<div style="font-size:${pick(format, 32, 40, 44)}px;color:#6b7370;padding-bottom:${pick(format, 24, 30, 34)}px">${esc(c.weekday ?? '')}</div></div>
+${items.length ? `<div style="flex:1;display:flex;flex-direction:column;gap:${pick(format, 14, 18, 22)}px;align-self:stretch;justify-content:center">${items.map((item) => `<div style="background:#fff;border-left:10px solid ${item.done ? 'var(--primary)' : '#e5484d'};border-radius:20px;padding:${pick(format, 16, 22, 26)}px ${pick(format, 22, 28, 32)}px;font-size:${pick(format, 30, 38, 42)}px;font-weight:700">${item.time ? `<span style="color:#8a8f8d;font-weight:600;margin-right:14px">${esc(item.time)}</span>` : ''}${markup(item.text)}</div>`).join('')}</div>` : ''}
+</div>${footer(c, 'full', true)}</div>`;
+}
+
+function pick(format, square, portrait, tall) {
+  if (format.width === format.height) return square;
+  return format.height >= 1900 ? tall : portrait;
+}
+
+// Native-looking styles default to a small logo only; Meta adds its own CTA button under the image.
+function footer(c, fallback, light, compact = true, withBadge = false) {
+  const mode = c.footer ?? fallback;
+  if (mode === 'none') return '';
+  if (mode === 'logo') {
+    const logo = light ? brand.logo : brand.logoDark ?? brand.logo;
+    return `<div class="cta-row" style="justify-content:flex-end">${logo ? `<img src="${logo}" alt="${esc(brand.name)}" style="height:44px;width:auto;max-width:420px;opacity:.85">` : `<span class="brandline">${esc(brand.name)}</span>`}</div>`;
+  }
+  return ctaRow(withBadge, compact, light);
+}
+
 function logoLine(dark) {
   const logo = dark ? brand.logoDark ?? brand.logo : brand.logo;
   if (logo) {
@@ -263,10 +356,10 @@ function logoLine(dark) {
   return `<div class="brandline">${esc(brand.name)}</div>`;
 }
 
-function ctaRow(withBadge = true, compact = false) {
+function ctaRow(withBadge = true, compact = false, light = true) {
   const cta = defaults.cta ? `<span class="cta" style="${compact ? 'font-size:30px;padding:18px 34px' : ''}">${esc(defaults.cta)}</span>` : '';
   const badge = withBadge && brand.badge ? `<img class="badge" src="${brand.badge}">` : '';
-  const logo = compact ? `<span style="margin-left:auto">${logoLine(false)}</span>` : '';
+  const logo = compact ? `<span style="margin-left:auto">${logoLine(!light)}</span>` : '';
   return `<div class="cta-row">${cta}${badge}${logo}</div>`;
 }
 
@@ -345,6 +438,9 @@ function validateCreatives(list) {
     seen.add(creative.id);
     if (!templates[creative.template]) {
       fail(`creative ${creative.id} uses unknown template: ${creative.template} (expected ${Object.keys(templates).join(', ')})`);
+    }
+    if (creative.footer !== undefined && !['full', 'logo', 'none'].includes(creative.footer)) {
+      fail(`creative ${creative.id} has unknown footer: ${creative.footer} (expected full, logo, none)`);
     }
     const creativeFormats = creative.formats ?? defaultFormats;
     for (const formatKey of creativeFormats) {
@@ -550,6 +646,15 @@ and a list of creatives. Each creative picks one of these visual styles:
   screenshot  raw product screenshot with a caption bar
   compare     before/after comparison columns
   statement   one big line on a solid colour
+  scorecard   readable shortlist of scored items, built in HTML (not a screenshot)
+  poll        story-style poll sticker, optionally over a photo
+  search      search bar with typed query and suggestions
+  ticket      boarding-pass card for travel and event timing
+  calendar    big calendar page with an agenda
+
+Native styles (post, thread, notes, poll) show only a small logo by default,
+because Meta adds its own CTA button. Set "footer": "full", "logo" or "none"
+on a creative to override.
 
 Formats: 1:1 (1080x1080), 4:5 (1080x1350), 9:16 (1080x1920, with Stories
 and Reels safe zones).
