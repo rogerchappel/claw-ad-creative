@@ -67,6 +67,18 @@
       "id": "b4-statement", "adSet": "b-objections", "family": "objection-handling", "style": "operator-memo", "template": "statement",
       "headline": "6 sites.\n1 day.\n*1 list.*", "body": "Free on iPhone and iPad.",
       "primaryText": "Busy days don't get shorter. Your notes can."
+    },
+    {
+      "id": "b5-scorecard", "adSet": "b-objections", "family": "free-tool-funnel", "style": "readable-product", "template": "scorecard",
+      "headline": "Today's visits, *sorted.*", "listLabel": "Flagged for follow-up",
+      "lots": [{ "lot": "Site 4", "label": "Cracked slab", "tags": ["Photo", "Note"], "score": 9.0, "star": true }, { "lot": "Site 2", "label": "Loose railing", "tags": ["Photo"], "score": 7.5 }, { "lot": "Site 6", "label": "Paint touch-up", "score": 4.0 }],
+      "primaryText": "Flag what matters on site and the list sorts itself."
+    },
+    {
+      "id": "b6-search", "adSet": "b-objections", "family": "native-text-story", "style": "search-bar", "template": "search",
+      "query": "how to keep site notes organised", "suggestions": ["…with photos", "…for a team"],
+      "body": "Log it on site.\n*Find it in a second.*",
+      "primaryText": "The answer is shorter than the search."
     }
   ]
 }
