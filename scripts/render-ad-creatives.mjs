@@ -275,12 +275,12 @@ function normaliseBrand(input) {
     fail('job.brand.name is required');
   }
   const colors = {
-    primary: '#28564a',
-    deep: '#123e34',
-    accent: '#8ef5b5',
-    light: '#e6f2ea',
-    ink: '#10241f',
-    muted: '#52645e',
+    primary: '#334155',
+    deep: '#0f172a',
+    accent: '#fbbf24',
+    light: '#f1f5f9',
+    ink: '#111827',
+    muted: '#64748b',
     paper: '#ffffff',
     ...(input.colors ?? {})
   };
