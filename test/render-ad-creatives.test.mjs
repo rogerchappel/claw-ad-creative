@@ -117,6 +117,23 @@ test('renders the newer styles and applies the footer option', async () => {
   assert.doesNotMatch(await readFile(path.join(out, 'html', 'notes-default_4x5.html'), 'utf8'), /class="cta"/);
 });
 
+test('renders the native status, caption and sticky styles', async () => {
+  const { jobFile, out } = await setup([
+    { id: 'status', template: 'status', color: 'ocean', headline: 'Short <hot> take', formats: ['4:5'] },
+    { id: 'caption', template: 'caption', background: 'photo', headline: 'Me on day 3', byline: false, formats: ['9:16'] },
+    { id: 'sticky', template: 'sticky', headline: 'Note to self:', items: ['one', { text: 'two', done: true }], formats: ['1:1'] }
+  ]);
+  const result = render(jobFile, out);
+  assert.equal(result.status, 0, result.stderr);
+
+  const status = await readFile(path.join(out, 'html', 'status_4x5.html'), 'utf8');
+  assert.match(status, /Short &lt;hot&gt; take/);
+  assert.match(status, /#3aa0e8/);
+  assert.doesNotMatch(status, /class="cta"/);
+  assert.match(await readFile(path.join(out, 'html', 'caption_9x16.html'), 'utf8'), /photo\.jpg/);
+  assert.match(await readFile(path.join(out, 'html', 'sticky_1x1.html'), 'utf8'), /<s>two<\/s>/);
+});
+
 test('rejects an unknown footer value', async () => {
   const { jobFile, out } = await setup([{ id: 'a', template: 'statement', footer: 'big' }]);
   const result = render(jobFile, out);
