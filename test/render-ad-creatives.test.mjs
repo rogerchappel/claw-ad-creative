@@ -96,3 +96,30 @@ test('rejects a missing asset file and unknown options before writing output', a
   assert.equal(unknown.stderr, 'ERROR: unrecognized option: --formt\nRun with --help for usage.\n');
   await assert.rejects(readFile(path.join(out, 'manifest.json')), { code: 'ENOENT' });
 });
+
+test('renders the newer styles and applies the footer option', async () => {
+  const { jobFile, out } = await setup([
+    { id: 'card', template: 'scorecard', headline: 'Top *picks*', lots: [{ lot: '7', label: 'First <one>', tags: ['Fast'], score: 9 }], formats: ['4:5'] },
+    { id: 'poll', template: 'poll', background: 'photo', question: 'Which?', options: ['A', 'B'], formats: ['9:16'] },
+    { id: 'search', template: 'search', query: 'how to', suggestions: ['…fast'], formats: ['1:1'] },
+    { id: 'ticket', template: 'ticket', from: 'AAA', to: 'BBB', fields: [{ label: 'Date', value: '1 Jan' }], formats: ['4:5'] },
+    { id: 'calendar', template: 'calendar', month: 'JAN', day: '12', items: [{ text: 'Go' }], formats: ['4:5'] },
+    { id: 'thread-full', template: 'thread', footer: 'full', messages: [{ from: 'me', text: 'hi' }], formats: ['4:5'] },
+    { id: 'notes-default', template: 'notes', items: ['x'], formats: ['4:5'] }
+  ]);
+  const result = render(jobFile, out);
+  assert.equal(result.status, 0, result.stderr);
+
+  const card = await readFile(path.join(out, 'html', 'card_4x5.html'), 'utf8');
+  assert.match(card, /First &lt;one&gt;/);
+  assert.match(card, />9\.0</);
+  assert.match(await readFile(path.join(out, 'html', 'thread-full_4x5.html'), 'utf8'), /class="cta"/);
+  assert.doesNotMatch(await readFile(path.join(out, 'html', 'notes-default_4x5.html'), 'utf8'), /class="cta"/);
+});
+
+test('rejects an unknown footer value', async () => {
+  const { jobFile, out } = await setup([{ id: 'a', template: 'statement', footer: 'big' }]);
+  const result = render(jobFile, out);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /unknown footer: big/);
+});
