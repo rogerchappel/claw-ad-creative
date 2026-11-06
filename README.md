@@ -159,19 +159,19 @@ plan:
 
 ```sh
 npm run creative:batch -- \
-  --brand "Thoroughbreds.ai" \
-  --brand-url "https://www.thoroughbreds.ai" \
-  --audience "bloodstock agents" \
-  --offer "Free iOS catalogue viewer" \
+  --brand "Fieldbook" \
+  --brand-url "https://example.com" \
+  --audience "site supervisors" \
+  --offer "Free iOS site visit log" \
   --cta "Install Free" \
   --count 40 \
   --formats "9:16,4:5,1:1" \
   --scale-profile launch-test \
   --ad-set-strategy family \
-  --primary "#28564a" \
-  --accent "#1f7a4f" \
+  --primary "#2b4c7e" \
+  --accent "#ffd166" \
   --publish-mode drafts-only \
-  --out-dir output/ad-batches/thoroughbreds-ai
+  --out-dir output/ad-batches/fieldbook
 ```
 
 The command writes:
@@ -266,7 +266,7 @@ created.
 - `docs/mcp-installation.md` - MCP choices, credential notes, and scope.
 - `docs/workflow.md` - end-to-end research, asset, approval, launch, report loop.
 - `docs/report-template.md` - concise performance report format.
-- `examples/catalogue-viewer-brief.md` - example brief for a horse catalogue app.
+- `examples/site-visit-app-brief.md` - example brief for a site visit app.
 - `examples/openclaw-agent-config.md` - example runtime/tool scoping notes.
 - `skills/facebook-ad-creative/` - reusable agent skill.
 - `manifest.json` - package-level skill library metadata.

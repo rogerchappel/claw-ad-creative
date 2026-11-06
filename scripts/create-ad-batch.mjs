@@ -2010,15 +2010,15 @@ function fail(message) {
 function printHelp() {
   console.log(`Usage:
   npm run creative:batch -- \\
-    --brand "Thoroughbreds.ai" \\
-    --brand-url "https://www.thoroughbreds.ai" \\
-    --audience "bloodstock agents" \\
-    --offer "Free iOS catalogue viewer" \\
+    --brand "Fieldbook" \\
+    --brand-url "https://example.com" \\
+    --audience "site supervisors" \\
+    --offer "Free iOS site visit log" \\
     --cta "Install Free" \\
     --count 40 \\
     --formats "9:16,4:5,1:1" \\
     --publish-mode drafts-only \\
-    --out-dir output/ad-batches/thoroughbreds-ai
+    --out-dir output/ad-batches/fieldbook
 
 Required:
   --brand, --audience, --offer, plus --landing-page or --brand-url

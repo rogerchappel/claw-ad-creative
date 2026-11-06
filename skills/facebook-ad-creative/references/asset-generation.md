@@ -132,15 +132,15 @@ brand:
   colors:
     primary: "#123456"
     secondary: "#abcdef"
-    accent: "#c49a4f"
+    accent: "#ffd166"
   typography: "serif headline, clean sans body"
 product:
   screenshots:
     - "path/to/screenshot.png"
-  offer: "Free iOS catalogue viewer"
+  offer: "Free iOS site visit log"
   cta: "Install Free"
 audience:
-  segment: "bloodstock agents"
+  segment: "site supervisors"
 asset:
   aspectRatio: "4:5"
   provider: "fal"

@@ -49,7 +49,7 @@ Minimum useful setup:
   "falSecretRef": { "name": "fal-api-key" },
   "adsLibraryProvider": "browser-or-scraper",
   "defaultMarket": "AU",
-  "defaultBrand": "Catalogue Viewer",
+  "defaultBrand": "Fieldbook",
   "canCreatePausedAds": false,
   "canPublishAds": false,
   "canChangeBudget": false
@@ -66,7 +66,7 @@ Ad ops/reporting setup, still conservative:
   "metaSecretRef": { "name": "meta-ads-access-token" },
   "adsLibraryProvider": "apify",
   "defaultMarket": "AU",
-  "defaultBrand": "Catalogue Viewer",
+  "defaultBrand": "Fieldbook",
   "canCreatePausedAds": true,
   "canPublishAds": false,
   "canChangeBudget": false

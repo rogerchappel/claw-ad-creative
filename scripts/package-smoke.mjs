@@ -22,7 +22,7 @@ if (!Array.isArray(pack?.files)) {
 const required = [
   'docs/architecture.md',
   'docs/workflow.md',
-  'examples/catalogue-viewer-brief.md',
+  'examples/site-visit-app-brief.md',
   'examples/openclaw-agent-config.md',
   'skills/facebook-ad-creative/SKILL.md',
   'skills/facebook-ad-creative/skill.json',
@@ -52,7 +52,6 @@ const allowed = new Set([
   'docs/report-template.md',
   'docs/TASKS.md',
   'examples/render-job.example.json',
-  'examples/thoroughbreds-ai-creative-pack.md',
   'scripts/create-ad-batch.mjs',
   'scripts/create-device-creative-prompt.mjs',
   'scripts/render-ad-creatives.mjs',

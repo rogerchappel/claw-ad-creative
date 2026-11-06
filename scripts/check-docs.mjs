@@ -10,7 +10,7 @@ const required = [
   'docs/mcp-installation.md',
   'docs/workflow.md',
   'docs/report-template.md',
-  'examples/catalogue-viewer-brief.md',
+  'examples/site-visit-app-brief.md',
   'examples/openclaw-agent-config.md',
   'skills/facebook-ad-creative/SKILL.md',
   'skills/facebook-ad-creative/skill.json',

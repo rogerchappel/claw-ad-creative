@@ -109,7 +109,7 @@ const promptPack = {
     'invented brand logo',
     'rendered CTA text in the model output',
     'watermark',
-    'distorted hands, horses, or anatomy'
+    'distorted hands or anatomy'
   ],
   reviewChecklist: [
     'The 3D phone/device angle is rendered by the model, not faked with code.',
@@ -265,14 +265,14 @@ function fail(message) {
 function printHelp() {
   console.log(`Usage:
   node scripts/create-device-creative-prompt.mjs \\
-    --brand-name "Thoroughbreds.ai" \\
-    --brand-url "https://www.thoroughbreds.ai" \\
+    --brand-name "Fieldbook" \\
+    --brand-url "https://example.com" \\
     --logo "/path/to/logo.png" \\
-    --primary "#123e34" \\
-    --accent "#c49a4f" \\
+    --primary "#2b4c7e" \\
+    --accent "#ffd166" \\
     --screenshot "/path/to/screenshot.png" \\
-    --audience "bloodstock agents" \\
-    --offer "Free iOS catalogue viewer" \\
+    --audience "site supervisors" \\
+    --offer "Free iOS site visit log" \\
     --cta "Install Free" \\
     --provider "fal" \\
     --model "runtime-selected" \\
