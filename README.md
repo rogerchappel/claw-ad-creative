@@ -85,8 +85,13 @@ It also writes `manifest.json`, a `meta-copy.csv` with one row per file
 (ad set, ad name, primary text, headline, CTA, UTM link), and a
 `contact-sheet.html` grouped by ad set for review.
 
-Each creative picks one of eight visual styles: `device`, `photo`, `post`,
-`thread`, `notes`, `screenshot`, `compare`, and `statement`. Mixing styles
+Each creative picks one of thirteen visual styles: `device`, `photo`, `post`,
+`thread`, `notes`, `screenshot`, `compare`, `statement`, `scorecard`, `poll`,
+`search`, `ticket`, and `calendar`. Native-looking styles (`post`, `thread`,
+`notes`, `poll`) show only a small logo by default because Meta adds its own
+CTA button; set `"footer": "full"`, `"logo"` or `"none"` on a creative to
+override. `scorecard` builds a readable product list in HTML, which reads
+better at feed size than a shrunk screenshot. Mixing styles
 inside every ad set gives Meta's delivery system genuinely different creatives
 to choose between, instead of near-duplicates it treats as one ad. See
 `examples/render-job.example.json` for the job shape and
