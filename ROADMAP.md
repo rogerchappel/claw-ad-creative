@@ -5,7 +5,7 @@
 - Docs-first architecture for creative and ad ops agents.
 - MCP installation and scoping notes.
 - Reusable Facebook ad creative skill.
-- Example Catalogue Viewer brief.
+- Example site visit app brief.
 - Validation for required docs and skill files.
 
 ## Next

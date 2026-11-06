@@ -53,7 +53,7 @@ const crewcmdAssignment = {
   metaSecretRef: { name: 'meta-ads-access-token' },
   adsLibraryProvider: 'browser-or-scraper',
   defaultMarket: 'AU',
-  defaultBrand: 'Catalogue Viewer',
+  defaultBrand: 'Fieldbook',
   canCreatePausedAds: false,
   canPublishAds: false,
   canChangeBudget: false
