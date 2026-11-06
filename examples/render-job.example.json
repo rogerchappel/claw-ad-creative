@@ -79,6 +79,16 @@
       "query": "how to keep site notes organised", "suggestions": ["…with photos", "…for a team"],
       "body": "Log it on site.\n*Find it in a second.*",
       "primaryText": "The answer is shorter than the search."
+    },
+    {
+      "id": "b7-status", "adSet": "b-objections", "family": "native-text-story", "style": "colour-status", "template": "status",
+      "color": "sunset", "headline": "Who else writes site notes on the back of a receipt? 🙋",
+      "primaryText": "No judgement. Keep them in one place instead. Free on iPhone and iPad."
+    },
+    {
+      "id": "b8-caption", "adSet": "b-objections", "family": "native-text-story", "style": "meme-caption", "template": "caption",
+      "background": "field", "byline": false, "headline": "Me promising I'll remember which site had the cracked slab 🙃",
+      "primaryText": "You won't. Log it before you leave the site."
     }
   ]
 }
