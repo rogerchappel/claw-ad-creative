@@ -104,12 +104,21 @@ test('rejects an unreadable research note without writing output', async () => {
   const note = path.join(root, 'note.md');
   await writeFile(note, 'Pain: hidden\n');
   await chmod(note, 0o000);
-  const { outDir, result } = await runBatch(['--research-note', note]);
+  try {
+    await readFile(note);
+  } catch (error) {
+    if (error.code !== 'EACCES') throw error;
 
-  assert.equal(result.status, 1);
-  assert.equal(result.stdout, '');
-  assert.equal(result.stderr, `ERROR: --research-note file is not readable: ${note}\nRun with --help for usage.\n`);
-  await assert.rejects(readFile(path.join(outDir, 'insight-brief.json')), { code: 'ENOENT' });
+    const { outDir, result } = await runBatch(['--research-note', note]);
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, '');
+    assert.equal(result.stderr, `ERROR: --research-note file is not readable: ${note}\nRun with --help for usage.\n`);
+    await assert.rejects(readFile(path.join(outDir, 'insight-brief.json')), { code: 'ENOENT' });
+    return;
+  }
+
+  // Privileged runners can read mode-000 files, so this fixture cannot test EACCES there.
+  assert.equal(await readFile(note, 'utf8'), 'Pain: hidden\n');
 });
 
 test('extracts labelled inputs from multiple repeatable research notes', async () => {
