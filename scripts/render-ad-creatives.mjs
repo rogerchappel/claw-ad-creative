@@ -60,7 +60,7 @@ const concurrency = parseConcurrency(args.concurrency);
 const brand = normaliseBrand(job.brand ?? {});
 const defaults = job.defaults ?? {};
 const assets = resolveAssets(job.assets ?? {});
-const creatives = validateCreatives(job.creatives);
+const creatives = validateCreatives([...(job.creatives ?? []), ...expandMatrix(job.matrix)]);
 const selected = args.only ? creatives.filter((creative) => creative.id === args.only) : creatives;
 
 if (args.only && selected.length === 0) {
@@ -107,6 +107,7 @@ const manifest = jobs.map(({ creative, formatKey, htmlFile, pngFile }) => ({
   cta: creative.metaCta ?? defaults.metaCta ?? 'LEARN_MORE',
   url: landingUrl(creative),
   hypothesis: creative.hypothesis ?? null,
+  test: creative.test ?? null,
   sources: creative.sources ?? []
 }));
 
@@ -177,9 +178,9 @@ function renderDevice(c, format) {
   const cls = dark ? 'frame' : 'frame on-light';
   if (square) {
     return `<div class="${cls}" style="${style};flex-direction:row;gap:48px;align-items:center">
-<div style="flex:1;min-width:0;display:flex;flex-direction:column;height:100%">${text}${ctaRow()}</div><div class="slot" style="flex:0 0 44%;height:100%">${frame}</div></div>`;
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;height:100%">${text}${ctaRow(true, false, true, c.cta ?? defaults.cta)}</div><div class="slot" style="flex:0 0 44%;height:100%">${frame}</div></div>`;
   }
-  return `<div class="${cls}" style="${style}">${text}<div class="slot" style="flex:1;margin-top:36px;min-height:0">${frame}</div>${ctaRow()}</div>`;
+  return `<div class="${cls}" style="${style}">${text}<div class="slot" style="flex:1;margin-top:36px;min-height:0">${frame}</div>${ctaRow(true, false, true, c.cta ?? defaults.cta)}</div>`;
 }
 
 function renderPhoto(c, format) {
@@ -189,7 +190,7 @@ function renderPhoto(c, format) {
 <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,18,14,.6) 0%,rgba(6,18,14,0) 22%,rgba(6,18,14,0) 34%,rgba(6,18,14,.82) 58%,rgba(6,18,14,.95) 100%)"></div>
 <div class="frame" style="color:#fff">${logoLine(true)}
 <div style="margin-top:auto">${c.eyebrow ? `<div class="eyebrow">${esc(c.eyebrow)}</div>` : ''}<h1 style="font-size:${square ? 78 : 96}px;text-shadow:0 4px 30px rgba(0,0,0,.35)">${markup(c.headline)}</h1>${c.body ? `<p class="body" style="opacity:.92">${markup(c.body)}</p>` : ''}</div>
-${ctaRow()}</div>`;
+${ctaRow(true, false, true, c.cta ?? defaults.cta)}</div>`;
 }
 
 function renderPost(c, format) {
@@ -348,7 +349,7 @@ function renderStatus(c, format) {
   // Coloured status posts shrink the type as the text gets longer, so short lines hit hard and long ones still fit.
   const scale = text.length <= 40 ? 1 : text.length <= 90 ? 0.88 : 0.7;
   const background = statusBackgrounds[c.color] ?? c.color ?? statusBackgrounds.brand;
-  return `<div class="frame" style="background:${background};color:#fff;justify-content:center;text-align:center">
+  return `<div class="frame" style="background:${background};color:#fff;justify-content:center;text-align:center;${c.color && c.color !== 'brand' ? '--accent:#fff;' : ''}">
 <h1 style="font-family:var(--text);font-weight:800;letter-spacing:-0.01em;line-height:1.18;font-size:${Math.round(pick(format, 92, 104, 112) * scale)}px">${markup(c.headline)}</h1>
 ${footer(c, 'none', false)}</div>`;
 }
@@ -386,7 +387,7 @@ function footer(c, fallback, light, compact = true, withBadge = false) {
     const logo = light ? brand.logo : brand.logoDark ?? brand.logo;
     return `<div class="cta-row" style="justify-content:flex-end">${logo ? `<img src="${logo}" alt="${esc(brand.name)}" style="height:44px;width:auto;max-width:420px;opacity:.85">` : `<span class="brandline">${esc(brand.name)}</span>`}</div>`;
   }
-  return ctaRow(withBadge, compact, light);
+  return ctaRow(withBadge, compact, light, c.cta ?? defaults.cta);
 }
 
 function logoLine(dark) {
@@ -397,8 +398,8 @@ function logoLine(dark) {
   return `<div class="brandline">${esc(brand.name)}</div>`;
 }
 
-function ctaRow(withBadge = true, compact = false, light = true) {
-  const cta = defaults.cta ? `<span class="cta" style="${compact ? 'font-size:30px;padding:18px 34px' : ''}">${esc(defaults.cta)}</span>` : '';
+function ctaRow(withBadge = true, compact = false, light = true, label = defaults.cta) {
+  const cta = label ? `<span class="cta" style="${compact ? 'font-size:30px;padding:18px 34px' : ''}">${esc(label)}</span>` : '';
   const badge = withBadge && brand.badge ? `<img class="badge" src="${brand.badge}">` : '';
   const logo = compact ? `<span style="margin-left:auto">${logoLine(!light)}</span>` : '';
   return `<div class="cta-row">${cta}${badge}${logo}</div>`;
@@ -461,6 +462,50 @@ function asset(key, label, id) {
     fail(`creative ${id} references unknown asset: ${key}`);
   }
   return assets[key];
+}
+
+// Turns hooks x layouts x CTAs into creatives so one variable can be read across many ads.
+// "balanced" rotates CTAs so each hook and layout sees all of them without multiplying the ad count.
+function expandMatrix(matrix) {
+  if (!matrix) return [];
+  const { round = 'r1', hooks = [], layouts = [], ctas = [], design = 'balanced' } = matrix;
+  if (!['balanced', 'full'].includes(design)) {
+    fail(`job.matrix.design must be balanced or full, got: ${design}`);
+  }
+  if (hooks.length === 0 || layouts.length === 0) {
+    fail('job.matrix needs at least one hook and one layout');
+  }
+  for (const [label, list] of [['hooks', hooks], ['layouts', layouts], ['ctas', ctas]]) {
+    for (const [index, item] of list.entries()) {
+      if (!item.id || !/^[a-z0-9][a-z0-9-]*$/.test(item.id)) {
+        fail(`job.matrix.${label}[${index}].id must be lowercase letters, numbers, and dashes`);
+      }
+    }
+  }
+  const creatives = [];
+  hooks.forEach((hook, hookIndex) => {
+    if (!hook.text) fail(`job.matrix hook ${hook.id} needs text`);
+    layouts.forEach((layout, layoutIndex) => {
+      const { id: layoutId, hookField = 'headline', ...fields } = layout;
+      const rotation = ctas.length ? [ctas[(hookIndex + layoutIndex) % ctas.length]] : [null];
+      for (const cta of design === 'full' && ctas.length ? ctas : rotation) {
+        creatives.push({
+          ...fields,
+          id: [round, hook.id, layoutId, cta?.id].filter(Boolean).join('-'),
+          adSet: `${round}-${hook.id}`,
+          family: hook.type ?? fields.family,
+          style: fields.style ?? fields.template,
+          [hookField]: hook.text,
+          metaHeadline: hook.metaHeadline ?? stripMarkup(hook.text),
+          primaryText: [hook.primaryText, cta?.closer].filter(Boolean).join(' '),
+          ...(cta?.text ? { cta: cta.text } : {}),
+          ...(cta?.metaCta ? { metaCta: cta.metaCta } : {}),
+          test: { round, hook: hook.id, hookType: hook.type ?? null, layout: layoutId, cta: cta?.id ?? null }
+        });
+      }
+    });
+  });
+  return creatives;
 }
 
 function validateCreatives(list) {
@@ -593,8 +638,12 @@ ${[...groups].map(([adSet, list]) => `<h2>${esc(adSet)} (${list.length})</h2><se
 
 function toCsv(rows) {
   const columns = ['adSet', 'adName', 'format', 'style', 'image', 'primaryText', 'headline', 'description', 'cta', 'url'];
+  const testColumns = ['hook', 'layout', 'ctaVariant'];
+  const hasTest = rows.some((row) => row.test);
   const cell = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
-  return `${columns.join(',')}\n${rows.map((row) => columns.map((column) => cell(row[column])).join(',')).join('\n')}\n`;
+  const testCells = (row) => [row.test?.hook, row.test?.layout, row.test?.cta].map(cell);
+  const header = hasTest ? [...columns, ...testColumns] : columns;
+  return `${header.join(',')}\n${rows.map((row) => [...columns.map((column) => cell(row[column])), ...(hasTest ? testCells(row) : [])].join(',')).join('\n')}\n`;
 }
 
 function markup(value) {
@@ -696,6 +745,10 @@ and a list of creatives. Each creative picks one of these visual styles:
               ("color": brand, sunset, ocean, violet, red, black or any CSS)
   caption     plain caption bar above a photo, like a shared post
   sticky      handwritten sticky note, optionally stuck over a photo
+
+Add a "matrix" to a job to generate a creative test: hooks x layouts x CTAs,
+one ad set per hook. Every manifest row records its hook, layout and CTA so
+scripts/score-ad-test.mjs can rank them from a Meta results export.
 
 Native styles (post, thread, notes, poll, status, caption, sticky) show a
 small logo or nothing by default,
