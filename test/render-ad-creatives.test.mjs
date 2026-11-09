@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, test } from 'node:test';
@@ -203,6 +203,37 @@ test('renders carousels as cards that share one ad', async () => {
     assert.equal(failed.status, 1);
     assert.match(failed.stderr, pattern);
   }
+});
+
+async function fakeChrome(root, script) {
+  const file = path.join(root, 'fake-chrome.sh');
+  await writeFile(file, `#!/bin/sh\nfor arg in "$@"; do case "$arg" in --screenshot=*) out="\${arg#--screenshot=}";; esac; done\n${script}\n`);
+  await chmod(file, 0o755);
+  return file;
+}
+
+function renderWith(jobFile, out, chrome, extra = []) {
+  return spawnSync(process.execPath, ['scripts/render-ad-creatives.mjs', '--job', jobFile, '--out-dir', out, '--chrome', chrome, ...extra], { encoding: 'utf8' });
+}
+
+test('retries a screenshot that fails once', async () => {
+  const { root, jobFile, out } = await setup([{ id: 'a', template: 'statement', headline: 'x', formats: ['1:1'] }]);
+  const chrome = await fakeChrome(root, `if [ ! -f "${root}/seen" ]; then touch "${root}/seen"; exit 1; fi; echo PNG > "$out"`);
+  const result = renderWith(jobFile, out, chrome);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(await readFile(path.join(out, '1x1', 'a.png'), 'utf8'), 'PNG\n');
+});
+
+test('gives up on a hung screenshot after the time limit', async () => {
+  const { root, jobFile, out } = await setup([{ id: 'a', template: 'statement', headline: 'x', formats: ['1:1'] }]);
+  const chrome = await fakeChrome(root, 'exec sleep 30');
+  const result = renderWith(jobFile, out, chrome, ['--timeout', '0.2']);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /timed out after 0\.2s/);
+
+  const bad = renderWith(jobFile, out, chrome, ['--timeout', 'soon']);
+  assert.equal(bad.status, 1);
+  assert.match(bad.stderr, /--timeout must be/);
 });
 
 test('rejects an unknown footer value', async () => {
