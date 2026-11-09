@@ -355,6 +355,7 @@ function renderStatus(c, format) {
   const background = statusBackgrounds[c.color] ?? c.color ?? statusBackgrounds.brand;
   return `<div class="frame" style="background:${background};color:#fff;justify-content:center;text-align:center;${c.color && c.color !== 'brand' ? '--accent:#fff;' : ''}">
 <h1 style="font-family:var(--text);font-weight:800;letter-spacing:-0.01em;line-height:1.18;font-size:${Math.round(pick(format, 92, 104, 112) * scale)}px">${markup(c.headline)}</h1>
+${c.tagline ? `<p style="font-weight:600;font-size:${pick(format, 34, 38, 42)}px;line-height:1.25;margin-top:${pick(format, 28, 36, 44)}px;opacity:.92">${markup(c.tagline)}</p>` : ''}
 ${footer(c, 'none', false)}</div>`;
 }
 
@@ -362,7 +363,7 @@ function renderCaption(c, format) {
   const photo = asset(c.background, 'background', c.id);
   const byline = c.byline === false ? '' : `<div style="display:flex;align-items:center;gap:18px;margin-bottom:22px">${brand.logoSquare ? `<img src="${brand.logoSquare}" style="width:${pick(format, 64, 72, 80)}px;height:${pick(format, 64, 72, 80)}px;border-radius:50%">` : ''}<div style="font-weight:700;font-size:${pick(format, 28, 32, 36)}px">${esc(c.byline ?? brand.name)}</div></div>`;
   return `<div style="position:absolute;inset:0;background:#fff;color:#111;padding-top:var(--safe-top);display:flex;flex-direction:column">
-<div style="padding:${pick(format, 36, 44, 52)}px 56px ${pick(format, 30, 36, 44)}px">${byline}<p style="font-size:${pick(format, 48, 58, 64)}px;line-height:1.22;font-weight:600">${markup(c.headline)}</p></div>
+<div style="padding:${pick(format, 36, 44, 52)}px 56px ${pick(format, 30, 36, 44)}px">${byline}<p style="font-size:${pick(format, 48, 58, 64)}px;line-height:1.22;font-weight:600">${markup(c.headline)}</p>${c.tagline ? `<p style="font-size:${pick(format, 28, 32, 36)}px;line-height:1.25;color:#5b6360;margin-top:12px">${markup(c.tagline)}</p>` : ''}</div>
 <img src="${photo}" style="flex:1;min-height:0;width:100%;object-fit:cover;object-position:${c.focus ?? 'center'};display:block"></div>`;
 }
 
@@ -374,6 +375,7 @@ function renderSticky(c, format) {
 <div style="width:${pick(format, 760, 860, 900)}px;background:#ffe769;color:#262014;padding:${pick(format, 56, 70, 80)}px ${pick(format, 56, 66, 72)}px;transform:rotate(${c.tilt ?? -2.5}deg);box-shadow:0 30px 50px rgba(0,0,0,.35),inset 0 -30px 40px rgba(0,0,0,.04);font-family:'Noteworthy','Marker Felt','Bradley Hand','Segoe Print',cursive">
 <div style="font-size:${pick(format, 64, 78, 86)}px;line-height:1.15;font-weight:700">${markup(c.headline)}</div>
 ${items.length ? `<div style="margin-top:${pick(format, 26, 36, 42)}px;display:flex;flex-direction:column;gap:${pick(format, 8, 14, 18)}px;font-size:${pick(format, 44, 54, 60)}px;line-height:1.25">${items.map((item) => `<div>${typeof item === 'object' && item.done ? '<s>' : ''}${markup(typeof item === 'object' ? item.text : item)}${typeof item === 'object' && item.done ? '</s>' : ''}</div>`).join('')}</div>` : ''}
+${c.tagline ? `<div style="margin-top:${pick(format, 22, 30, 34)}px;font-size:${pick(format, 32, 38, 42)}px;line-height:1.2">${markup(c.tagline)}</div>` : ''}
 </div>
 <div style="position:absolute;left:72px;right:72px;bottom:calc(var(--safe-bottom) + 24px)">${footer(c, 'logo', !photo)}</div></div>`;
 }
@@ -772,6 +774,8 @@ and a list of creatives. Each creative picks one of these visual styles:
   ticket      boarding-pass card for travel and event timing
   calendar    big calendar page with an agenda
   status      big centred text on a coloured background, like a text-only post
+              (status, caption and sticky take an optional "tagline" that says
+              what the product is)
               ("color": brand, sunset, ocean, violet, red, black or any CSS)
   caption     plain caption bar above a photo, like a shared post
   sticky      handwritten sticky note, optionally stuck over a photo
