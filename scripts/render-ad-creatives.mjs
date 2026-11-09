@@ -748,7 +748,7 @@ and a list of creatives. Each creative picks one of these visual styles:
 
 Add a "matrix" to a job to generate a creative test: hooks x layouts x CTAs,
 one ad set per hook. Every manifest row records its hook, layout and CTA so
-scripts/score-ad-test.mjs can rank them from a Meta results export.
+scripts/score-ad-results.mjs can rank them from a Meta results export.
 
 Native styles (post, thread, notes, poll, status, caption, sticky) show a
 small logo or nothing by default,

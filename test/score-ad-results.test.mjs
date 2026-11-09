@@ -19,7 +19,7 @@ async function score(csv, extra = []) {
   temporaryDirectories.push(root);
   await writeFile(path.join(root, 'manifest.json'), JSON.stringify(manifest));
   await writeFile(path.join(root, 'export.csv'), csv);
-  const result = spawnSync(process.execPath, ['scripts/score-ad-test.mjs', '--manifest', path.join(root, 'manifest.json'), '--results', path.join(root, 'export.csv'), ...extra], { encoding: 'utf8' });
+  const result = spawnSync(process.execPath, ['scripts/score-ad-results.mjs', '--manifest', path.join(root, 'manifest.json'), '--results', path.join(root, 'export.csv'), ...extra], { encoding: 'utf8' });
   return { result, root };
 }
 

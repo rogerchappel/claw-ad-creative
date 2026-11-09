@@ -55,6 +55,7 @@ const allowed = new Set([
   'scripts/create-ad-batch.mjs',
   'scripts/create-device-creative-prompt.mjs',
   'scripts/render-ad-creatives.mjs',
+  'scripts/score-ad-results.mjs',
   'scripts/package-smoke.mjs',
   'scripts/print-openclaw-config.mjs',
   'scripts/validate.sh',
