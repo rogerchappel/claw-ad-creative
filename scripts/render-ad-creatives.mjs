@@ -5,7 +5,8 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const supportedOptions = new Set(['job', 'out-dir', 'chrome', 'only', 'html-only', 'concurrency']);
+const supportedOptions = new Set(['job', 'out-dir', 'chrome', 'only', 'html-only', 'concurrency', 'timeout']);
+const screenshotAttempts = 3;
 const booleanOptions = new Set(['html-only']);
 
 const formats = {
@@ -57,6 +58,7 @@ try {
 
 const outDir = path.resolve(args['out-dir'] ?? path.join(jobDir, 'output'));
 const concurrency = parseConcurrency(args.concurrency);
+const timeoutSeconds = parseTimeout(args.timeout);
 const brand = normaliseBrand(job.brand ?? {});
 const defaults = job.defaults ?? {};
 const assets = resolveAssets(job.assets ?? {});
@@ -584,7 +586,18 @@ function landingUrl(creative) {
   return url.href;
 }
 
-function screenshot(chromePath, { format, htmlFile, pngFile }) {
+// Headless Chrome occasionally hangs or crashes on a page that renders fine next time.
+async function screenshot(chromePath, item) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await captureOnce(chromePath, item);
+    } catch (error) {
+      if (attempt >= screenshotAttempts) throw error;
+    }
+  }
+}
+
+function captureOnce(chromePath, { format, htmlFile, pngFile }) {
   return new Promise((resolve, reject) => {
     const child = spawn(chromePath, [
       '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run', '--no-default-browser-check',
@@ -592,10 +605,20 @@ function screenshot(chromePath, { format, htmlFile, pngFile }) {
       `--window-size=${format.width},${format.height}`, `--screenshot=${pngFile}`, pathToFileURL(htmlFile).href
     ], { stdio: ['ignore', 'ignore', 'pipe'] });
     let stderr = '';
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      child.kill('SIGKILL');
+    }, timeoutSeconds * 1000);
     child.stderr.on('data', (chunk) => { stderr += chunk; });
-    child.on('error', reject);
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
     child.on('close', (code) => {
-      if (code === 0 && existsSync(pngFile)) resolve();
+      clearTimeout(timer);
+      if (timedOut) reject(new Error(`Chrome timed out after ${timeoutSeconds}s for ${path.basename(htmlFile)}`));
+      else if (code === 0 && existsSync(pngFile)) resolve();
       else reject(new Error(`Chrome failed for ${path.basename(htmlFile)} (exit ${code}): ${stderr.trim().split('\n').pop()}`));
     });
   });
@@ -702,6 +725,15 @@ function parseConcurrency(value) {
   return Number(value);
 }
 
+function parseTimeout(value) {
+  if (value === undefined) return 60;
+  const seconds = Number(value);
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    fail('--timeout must be a positive number of seconds');
+  }
+  return seconds;
+}
+
 function parseArgs(argv) {
   const parsed = {};
   for (let index = 0; index < argv.length; index += 1) {
@@ -802,6 +834,7 @@ Options:
   --chrome <path>       Chrome or Chromium binary (default: CHROME_PATH, then
                         common install paths and the Playwright cache).
   --concurrency <n>     Parallel Chrome processes (default: 4).
+  --timeout <seconds>   Time limit per image, tried up to 3 times (default: 60).
   --html-only           Write HTML, manifest, and copy CSV without screenshots.
 
 Outputs:
