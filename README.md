@@ -116,6 +116,21 @@ lists what to carry into the next round. Verdicts use a strict bar because many
 variants are compared at once, and thin data is labelled as such. Small tests
 only find large differences; a variant with no clear difference isn't proven equal.
 
+### Carousels and long copy
+
+Add `carousels` to a render job to build multi-image ads. Each has an `id`,
+shared ad copy, and 2 to 10 `cards` that can use any style, with an optional
+`cardHeadline` and `cardDescription`. Cards default to 1:1. Set
+`primaryTextLong` on a creative, carousel or matrix hook to carry a long-form
+version of the ad copy alongside the short one.
+
+### Packaging a campaign
+
+`npm run creative:package -- --config campaigns.json` copies rendered ads into
+folders that follow Ads Manager (campaign, ad set, ad), writes setup notes at
+each level and a `copy.txt` per ad, and zips the result. Run with `--help` for
+the config format.
+
 Each creative picks one of sixteen visual styles: `device`, `photo`, `post`,
 `thread`, `notes`, `screenshot`, `compare`, `statement`, `scorecard`, `poll`,
 `search`, `ticket`, `calendar`, `status` (big text on a coloured background,
