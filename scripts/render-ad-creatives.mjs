@@ -193,7 +193,7 @@ function renderPhoto(c, format) {
   return `<img src="${photo}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${c.focus ?? 'center'}">
 <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,18,14,.6) 0%,rgba(6,18,14,0) 22%,rgba(6,18,14,0) 34%,rgba(6,18,14,.82) 58%,rgba(6,18,14,.95) 100%)"></div>
 <div class="frame" style="color:#fff">${logoLine(true)}
-<div style="margin-top:auto">${c.eyebrow ? `<div class="eyebrow">${esc(c.eyebrow)}</div>` : ''}<h1 style="font-size:${square ? 78 : 96}px;text-shadow:0 4px 30px rgba(0,0,0,.35)">${markup(c.headline)}</h1>${c.body ? `<p class="body" style="opacity:.92">${markup(c.body)}</p>` : ''}</div>
+<div style="margin-top:auto">${c.eyebrow ? `<div class="eyebrow">${esc(c.eyebrow)}</div>` : ''}<h1 style="font-size:${Math.round((square ? 78 : 96) * longTextScale(c.headline))}px;text-shadow:0 4px 30px rgba(0,0,0,.35)">${markup(c.headline)}</h1>${c.body ? `<p class="body" style="opacity:.92">${markup(c.body)}</p>` : ''}</div>
 ${ctaRow(true, false, true, c.cta ?? defaults.cta)}</div>`;
 }
 
@@ -282,7 +282,7 @@ function renderScorecard(c, format) {
 ${lot.tags?.length ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">${lot.tags.map((tag) => `<span style="font-size:${pick(format, 20, 24, 27)}px;font-weight:700;color:var(--primary);background:var(--light);border-radius:999px;padding:6px 14px">✓ ${esc(tag)}</span>`).join('')}</div>` : ''}</div>
 ${lot.score !== undefined ? `<div style="flex:none;min-width:${pick(format, 96, 116, 128)}px;text-align:center;font-weight:800;font-size:${pick(format, 40, 50, 56)}px;color:#fff;background:${tone(Number(lot.score))};border-radius:${pick(format, 18, 22, 24)}px;padding:${pick(format, 10, 14, 16)}px 0">${esc(Number(lot.score).toFixed(1))}</div>` : ''}</div>`;
   return `<div class="frame${dark ? '' : ' on-light'}" style="background:${dark ? 'radial-gradient(120% 80% at 80% 100%, var(--primary) 0%, var(--deep) 60%)' : 'var(--light)'};color:${dark ? '#fff' : 'var(--ink)'}">
-${logoLine(dark)}${c.eyebrow ? `<div class="eyebrow" style="margin-top:32px">${esc(c.eyebrow)}</div>` : ''}<h1 style="font-size:${pick(format, 66, 86, 96)}px;${c.eyebrow ? '' : 'margin-top:32px'}">${markup(c.headline)}</h1>
+${logoLine(dark)}${c.eyebrow ? `<div class="eyebrow" style="margin-top:32px">${esc(c.eyebrow)}</div>` : ''}<h1 style="font-size:${Math.round(pick(format, 66, 86, 96) * longTextScale(c.headline))}px;${c.eyebrow ? '' : 'margin-top:32px'}">${markup(c.headline)}</h1>
 <div style="margin:auto 0;padding-top:${pick(format, 24, 36, 44)}px">${c.listLabel ? `<div style="font-weight:700;font-size:${pick(format, 24, 28, 32)}px;opacity:.7;margin-bottom:16px">${esc(c.listLabel)}</div>` : ''}<div style="display:flex;flex-direction:column;gap:${pick(format, 12, 18, 22)}px">${lots.slice(0, rowCount).map(row).join('')}</div></div>
 ${footer(c, 'full', !dark, false, true)}</div>`;
 }
@@ -380,6 +380,11 @@ ${items.length ? `<div style="margin-top:${pick(format, 26, 36, 42)}px;display:f
 ${c.tagline ? `<div style="margin-top:${pick(format, 22, 30, 34)}px;font-size:${pick(format, 32, 38, 42)}px;line-height:1.2">${markup(c.tagline)}</div>` : ''}
 </div>
 <div style="position:absolute;left:72px;right:72px;bottom:calc(var(--safe-bottom) + 24px)">${footer(c, 'logo', !photo)}</div></div>`;
+}
+
+// Very long headlines shrink so they can't push the rest of the ad out of frame.
+function longTextScale(text) {
+  return stripMarkup(text ?? '').length > 80 ? 0.76 : 1;
 }
 
 function pick(format, square, portrait, tall) {
