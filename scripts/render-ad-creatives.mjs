@@ -269,6 +269,8 @@ ${c.body ? `<p class="body" style="font-size:${square ? 34 : 40}px">${markup(c.b
 function renderScorecard(c, format) {
   const dark = c.theme === 'dark';
   const lots = c.lots ?? [];
+  // A long headline takes a row's space, which keeps the CTA inside the frame.
+  const rowCount = Math.max(3, pick(format, 3, 4, 5) - (stripMarkup(c.headline ?? '').length > 54 ? 1 : 0));
   const tone = (score) => (score >= 8 ? 'var(--primary)' : score >= 5 ? '#d99a00' : '#9aa19e');
   const row = (lot, index) => `<div style="display:flex;align-items:center;gap:${pick(format, 20, 26, 30)}px;background:#fff;color:#111;border-radius:${pick(format, 22, 28, 32)}px;padding:${pick(format, 18, 26, 30)}px ${pick(format, 24, 30, 34)}px;box-shadow:0 10px 30px rgba(0,0,0,.12)${index === 0 && c.highlightFirst !== false ? ';outline:5px solid var(--accent)' : ''}">
 <div style="flex:none;font-weight:800;font-size:${pick(format, 26, 30, 34)}px;color:#6b7370;width:${pick(format, 110, 130, 150)}px">${esc(lot.lot ? `Lot ${lot.lot}` : '')}</div>
@@ -277,7 +279,7 @@ ${lot.tags?.length ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top
 ${lot.score !== undefined ? `<div style="flex:none;min-width:${pick(format, 96, 116, 128)}px;text-align:center;font-weight:800;font-size:${pick(format, 40, 50, 56)}px;color:#fff;background:${tone(Number(lot.score))};border-radius:${pick(format, 18, 22, 24)}px;padding:${pick(format, 10, 14, 16)}px 0">${esc(Number(lot.score).toFixed(1))}</div>` : ''}</div>`;
   return `<div class="frame${dark ? '' : ' on-light'}" style="background:${dark ? 'radial-gradient(120% 80% at 80% 100%, var(--primary) 0%, var(--deep) 60%)' : 'var(--light)'};color:${dark ? '#fff' : 'var(--ink)'}">
 ${logoLine(dark)}${c.eyebrow ? `<div class="eyebrow" style="margin-top:32px">${esc(c.eyebrow)}</div>` : ''}<h1 style="font-size:${pick(format, 66, 86, 96)}px;${c.eyebrow ? '' : 'margin-top:32px'}">${markup(c.headline)}</h1>
-<div style="margin:auto 0;padding-top:${pick(format, 24, 36, 44)}px">${c.listLabel ? `<div style="font-weight:700;font-size:${pick(format, 24, 28, 32)}px;opacity:.7;margin-bottom:16px">${esc(c.listLabel)}</div>` : ''}<div style="display:flex;flex-direction:column;gap:${pick(format, 12, 18, 22)}px">${lots.slice(0, pick(format, 3, 4, 5)).map(row).join('')}</div></div>
+<div style="margin:auto 0;padding-top:${pick(format, 24, 36, 44)}px">${c.listLabel ? `<div style="font-weight:700;font-size:${pick(format, 24, 28, 32)}px;opacity:.7;margin-bottom:16px">${esc(c.listLabel)}</div>` : ''}<div style="display:flex;flex-direction:column;gap:${pick(format, 12, 18, 22)}px">${lots.slice(0, rowCount).map(row).join('')}</div></div>
 ${footer(c, 'full', !dark, false, true)}</div>`;
 }
 
@@ -358,7 +360,7 @@ function renderCaption(c, format) {
   const photo = asset(c.background, 'background', c.id);
   const byline = c.byline === false ? '' : `<div style="display:flex;align-items:center;gap:18px;margin-bottom:22px">${brand.logoSquare ? `<img src="${brand.logoSquare}" style="width:${pick(format, 64, 72, 80)}px;height:${pick(format, 64, 72, 80)}px;border-radius:50%">` : ''}<div style="font-weight:700;font-size:${pick(format, 28, 32, 36)}px">${esc(c.byline ?? brand.name)}</div></div>`;
   return `<div style="position:absolute;inset:0;background:#fff;color:#111;padding-top:var(--safe-top);display:flex;flex-direction:column">
-<div style="padding:${pick(format, 36, 44, 52)}px 56px ${pick(format, 30, 36, 44)}px">${byline}<p style="font-size:${pick(format, 40, 48, 56)}px;line-height:1.3;font-weight:500">${markup(c.headline)}</p></div>
+<div style="padding:${pick(format, 36, 44, 52)}px 56px ${pick(format, 30, 36, 44)}px">${byline}<p style="font-size:${pick(format, 48, 58, 64)}px;line-height:1.22;font-weight:600">${markup(c.headline)}</p></div>
 <img src="${photo}" style="flex:1;min-height:0;width:100%;object-fit:cover;object-position:${c.focus ?? 'center'};display:block"></div>`;
 }
 
