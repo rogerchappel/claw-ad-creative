@@ -12,7 +12,7 @@ afterEach(async () => {
 });
 
 const creative = (hook, layout, cta) => ({ id: `r1-${hook}-${layout}-${cta}`, test: { round: 'r1', hook, layout, cta } });
-const manifest = { creatives: [creative('h1', 'a', 'c1'), creative('h1', 'b', 'c2'), creative('h2', 'a', 'c2'), creative('h2', 'b', 'c1'), creative('h3', 'a', 'c1'), creative('h3', 'b', 'c2')] };
+const manifest = { creatives: [{ id: 'car-h1-card1', carousel: { id: 'car-h1', position: 1 }, test: { round: 'r1', hook: 'h1', layout: 'carousel', cta: null } }, { id: 'car-h1-card2', carousel: { id: 'car-h1', position: 2 }, test: { round: 'r1', hook: 'h1', layout: 'carousel', cta: null } }, creative('h1', 'a', 'c1'), creative('h1', 'b', 'c2'), creative('h2', 'a', 'c2'), creative('h2', 'b', 'c1'), creative('h3', 'a', 'c1'), creative('h3', 'b', 'c2')] };
 
 async function score(csv, extra = []) {
   const root = await mkdtemp(path.join(tmpdir(), 'claw-score-test-'));
@@ -59,6 +59,14 @@ r1-h3-a-c1,10,200,4,0
   assert.equal(report.metric, 'clicks');
   assert.equal(report.factors.hook.find((level) => level.level === 'h3').verdict, 'not enough data');
   assert.equal(report.factors.hook.find((level) => level.level === 'h1').verdict, 'no clear difference');
+});
+
+test('scores a carousel as one ad', async () => {
+  const { result, root } = await score(`${header}car-h1,10,5000,100,40\nr1-h2-a-c2,10,5000,100,1\n`);
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(await readFile(path.join(root, 'test-report.json'), 'utf8'));
+  assert.deepEqual(report.unmatched, []);
+  assert.equal(report.factors.layout.find((level) => level.level === 'carousel').ads, 1);
 });
 
 test('rejects bad input', async () => {

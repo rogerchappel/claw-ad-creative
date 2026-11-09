@@ -32,7 +32,7 @@ try {
 
 const tests = new Map();
 for (const row of manifest.creatives ?? []) {
-  if (row.test) tests.set(row.id, row.test);
+  if (row.test) tests.set(row.carousel?.id ?? row.id, row.test);
 }
 if (tests.size === 0) {
   fail('--manifest has no test data; render a job with a "matrix" first');
