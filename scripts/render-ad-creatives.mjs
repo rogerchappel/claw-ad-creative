@@ -60,7 +60,7 @@ const concurrency = parseConcurrency(args.concurrency);
 const brand = normaliseBrand(job.brand ?? {});
 const defaults = job.defaults ?? {};
 const assets = resolveAssets(job.assets ?? {});
-const creatives = validateCreatives([...(job.creatives ?? []), ...expandMatrix(job.matrix)]);
+const creatives = validateCreatives([...(job.creatives ?? []), ...expandMatrix(job.matrix), ...expandCarousels(job.carousels)]);
 const selected = args.only ? creatives.filter((creative) => creative.id === args.only) : creatives;
 
 if (args.only && selected.length === 0) {
@@ -102,12 +102,14 @@ const manifest = jobs.map(({ creative, formatKey, htmlFile, pngFile }) => ({
   image: chrome ? path.relative(outDir, pngFile) : null,
   html: path.relative(outDir, htmlFile),
   primaryText: creative.primaryText ?? '',
+  primaryTextLong: creative.primaryTextLong ?? '',
   headline: creative.metaHeadline ?? stripMarkup(creative.headline ?? ''),
   description: creative.description ?? defaults.description ?? '',
   cta: creative.metaCta ?? defaults.metaCta ?? 'LEARN_MORE',
   url: landingUrl(creative),
   hypothesis: creative.hypothesis ?? null,
   test: creative.test ?? null,
+  carousel: creative.carousel ?? null,
   sources: creative.sources ?? []
 }));
 
@@ -500,6 +502,7 @@ function expandMatrix(matrix) {
           [hookField]: hook.text,
           metaHeadline: hook.metaHeadline ?? stripMarkup(hook.text),
           primaryText: [hook.primaryText, cta?.closer].filter(Boolean).join(' '),
+          primaryTextLong: [hook.primaryTextLong, cta?.closer].filter(Boolean).join('\n\n'),
           ...(cta?.text ? { cta: cta.text } : {}),
           ...(cta?.metaCta ? { metaCta: cta.metaCta } : {}),
           test: { round, hook: hook.id, hookType: hook.type ?? null, layout: layoutId, cta: cta?.id ?? null }
@@ -508,6 +511,31 @@ function expandMatrix(matrix) {
     });
   });
   return creatives;
+}
+
+// A carousel is one ad: its cards render as separate images that share the ad's copy.
+function expandCarousels(carousels) {
+  if (carousels === undefined) return [];
+  if (!Array.isArray(carousels)) fail('job.carousels must be an array');
+  return carousels.flatMap((carousel, index) => {
+    const { id, cards, ...shared } = carousel;
+    if (!id || !/^[a-z0-9][a-z0-9-]*$/.test(id)) {
+      fail(`job.carousels[${index}].id must be lowercase letters, numbers, and dashes`);
+    }
+    if (!Array.isArray(cards) || cards.length < 2 || cards.length > 10) {
+      fail(`carousel ${id} needs 2 to 10 cards`);
+    }
+    return cards.map((card, cardIndex) => {
+      const { cardHeadline: headline, cardDescription: description, ...fields } = card;
+      return {
+        formats: ['1:1'],
+        ...shared,
+        ...fields,
+        id: `${id}-card${cardIndex + 1}`,
+        carousel: { id, position: cardIndex + 1, headline: headline ?? '', description: description ?? '' }
+      };
+    });
+  });
 }
 
 function validateCreatives(list) {
@@ -639,7 +667,7 @@ ${[...groups].map(([adSet, list]) => `<h2>${esc(adSet)} (${list.length})</h2><se
 }
 
 function toCsv(rows) {
-  const columns = ['adSet', 'adName', 'format', 'style', 'image', 'primaryText', 'headline', 'description', 'cta', 'url'];
+  const columns = ['adSet', 'adName', 'format', 'style', 'image', 'primaryText', 'primaryTextLong', 'headline', 'description', 'cta', 'url'];
   const testColumns = ['hook', 'layout', 'ctaVariant'];
   const hasTest = rows.some((row) => row.test);
   const cell = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
@@ -751,6 +779,9 @@ and a list of creatives. Each creative picks one of these visual styles:
 Add a "matrix" to a job to generate a creative test: hooks x layouts x CTAs,
 one ad set per hook. Every manifest row records its hook, layout and CTA so
 scripts/score-ad-results.mjs can rank them from a Meta results export.
+
+Add "carousels" to a job to build multi-image ads: each has an id, shared ad
+copy, and 2 to 10 cards that use any style. Cards default to 1:1.
 
 Native styles (post, thread, notes, poll, status, caption, sticky) show a
 small logo or nothing by default,

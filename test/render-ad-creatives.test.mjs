@@ -178,6 +178,27 @@ test('full matrix design multiplies CTAs and bad matrices fail', async () => {
   }
 });
 
+test('renders carousels as cards that share one ad', async () => {
+  const carousels = [{ id: 'car-one', adSet: 'set-a', primaryText: 'Short.', primaryTextLong: 'Long.', test: { hook: 'h1', layout: 'carousel', cta: null }, cards: [
+    { template: 'status', headline: 'First', cardHeadline: 'Card one', cardDescription: 'More' },
+    { template: 'statement', headline: 'Last' }
+  ] }];
+  const { jobFile, out } = await setup(undefined, { creatives: undefined, carousels });
+  const result = render(jobFile, out);
+  assert.equal(result.status, 0, result.stderr);
+
+  const { creatives } = JSON.parse(await readFile(path.join(out, 'manifest.json'), 'utf8'));
+  assert.deepEqual(creatives.map((row) => [row.id, row.format, row.primaryTextLong]), [['car-one-card1', '1:1', 'Long.'], ['car-one-card2', '1:1', 'Long.']]);
+  assert.deepEqual(creatives[0].carousel, { id: 'car-one', position: 1, headline: 'Card one', description: 'More' });
+
+  for (const [bad, pattern] of [[[{ id: 'x', cards: [{ template: 'status' }] }], /2 to 10 cards/], [[{ id: 'Bad', cards: [] }], /lowercase/], ['nope', /must be an array/]]) {
+    const failing = await setup(undefined, { creatives: undefined, carousels: bad });
+    const failed = render(failing.jobFile, failing.out);
+    assert.equal(failed.status, 1);
+    assert.match(failed.stderr, pattern);
+  }
+});
+
 test('rejects an unknown footer value', async () => {
   const { jobFile, out } = await setup([{ id: 'a', template: 'statement', footer: 'big' }]);
   const result = render(jobFile, out);
