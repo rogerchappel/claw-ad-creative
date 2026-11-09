@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, test } from 'node:test';
@@ -29,7 +29,8 @@ async function setup(config) {
   return root;
 }
 
-const run = (root, extra = []) => spawnSync(process.execPath, ['scripts/package-campaigns.mjs', '--config', path.join(root, 'campaigns.json'), ...extra], { encoding: 'utf8' });
+const packageWith = (root, extra, env = {}) => spawnSync(process.execPath, ['scripts/package-campaigns.mjs', '--config', path.join(root, 'campaigns.json'), ...extra], { encoding: 'utf8', env: { ...process.env, ...env } });
+const run = (root, extra = []) => packageWith(root, ['--image-format', 'png', ...extra]);
 
 test('packages ads into campaign, ad set and ad folders and zips them', async () => {
   const root = await setup({
@@ -63,6 +64,34 @@ test('--no-zip skips the archive', async () => {
   const root = await setup({ name: 'export', campaigns: [{ folder: 'One', manifest: 'ads/manifest.json' }] });
   assert.equal(run(root, ['--no-zip']).status, 0);
   await assert.rejects(readFile(path.join(root, 'export.zip')), { code: 'ENOENT' });
+});
+
+test('exports PNGs as JPEGs by default, including top-level images', async () => {
+  const root = await setup({ name: 'export', include: ['grid.png', 'PLAN.md'], campaigns: [{ folder: 'One', manifest: 'ads/manifest.json' }] });
+  await writeFile(path.join(root, 'grid.png'), 'PNG');
+  const tools = path.join(root, 'tools');
+  await mkdir(tools);
+  await writeFile(path.join(tools, 'sips'), `#!/bin/sh\necho "$6" >> "${root}/quality"\ncp "$7" "$9"\n`);
+  await chmod(path.join(tools, 'sips'), 0o755);
+
+  const result = packageWith(root, ['--no-zip', '--jpeg-quality', '70'], { PATH: `${tools}${path.delimiter}${process.env.PATH}` });
+  assert.equal(result.status, 0, result.stderr);
+  const top = await readdir(path.join(root, 'export'));
+  assert.ok(top.includes('grid.jpg') && top.includes('PLAN.md') && !top.includes('grid.png'));
+  assert.deepEqual((await readdir(path.join(root, 'export', 'One', 'set-b', 'car'))).sort(), ['car_card1_1x1_1080x1080.jpg', 'car_card2_1x1_1080x1080.jpg', 'copy.txt']);
+  assert.match(await readFile(path.join(root, 'quality'), 'utf8'), /^70$/m);
+});
+
+test('explains what to do when JPEG export has no converter, and rejects bad options', async () => {
+  const root = await setup({ name: 'export', campaigns: [{ folder: 'One', manifest: 'ads/manifest.json' }] });
+  const none = packageWith(root, ['--no-zip'], { PATH: path.join(root, 'ads') });
+  assert.equal(none.status, 1);
+  assert.match(none.stderr, /JPEG export needs sips.*--image-format png/);
+  for (const [extra, pattern] of [[['--image-format', 'gif'], /jpeg or png/], [['--jpeg-quality', '0'], /1 to 100/]]) {
+    const failed = packageWith(root, extra);
+    assert.equal(failed.status, 1);
+    assert.match(failed.stderr, pattern);
+  }
 });
 
 test('rejects unsafe names, missing files and bad config', async () => {
