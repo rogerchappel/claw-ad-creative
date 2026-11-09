@@ -132,6 +132,12 @@ test('renders the native status, caption and sticky styles', async () => {
   assert.doesNotMatch(status, /class="cta"/);
   assert.match(await readFile(path.join(out, 'html', 'caption_9x16.html'), 'utf8'), /photo\.jpg/);
   assert.match(await readFile(path.join(out, 'html', 'sticky_1x1.html'), 'utf8'), /<s>two<\/s>/);
+
+  const tagged = await setup(['status', 'caption', 'sticky'].map((template) => ({ id: template, template, background: template === 'status' ? undefined : 'photo', headline: 'Hook', tagline: 'The <best> app', formats: ['4:5'] })));
+  assert.equal(render(tagged.jobFile, tagged.out).status, 0);
+  for (const template of ['status', 'caption', 'sticky']) {
+    assert.match(await readFile(path.join(tagged.out, 'html', `${template}_4x5.html`), 'utf8'), /The &lt;best&gt; app/);
+  }
 });
 
 test('expands a balanced test matrix and records each variable', async () => {
