@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { accessSync, constants, copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const sizes = { '1:1': '1080x1080', '4:5': '1080x1350', '9:16': '1080x1920' };
 const options = parseArgs(process.argv.slice(2));
+const imageFormat = options['image-format'] ?? 'jpeg';
+const jpegQuality = Number(options['jpeg-quality'] ?? 88);
 
 if (options.help) {
   printHelp();
   process.exit(0);
 }
+if (!['jpeg', 'png'].includes(imageFormat)) fail('--image-format must be jpeg or png');
+if (!Number.isInteger(jpegQuality) || jpegQuality < 1 || jpegQuality > 100) fail('--jpeg-quality must be a whole number from 1 to 100');
 if (!options.config) fail('missing required --config path');
 assertReadable(options.config, '--config');
 
@@ -79,7 +83,7 @@ for (const campaign of config.campaigns) {
 for (const file of config.include ?? []) {
   const source = path.resolve(configDir, file);
   assertReadable(source, `config.include ${file}`);
-  copyFileSync(source, path.join(root, path.basename(file)));
+  exportImage(source, path.join(root, path.basename(file)));
 }
 writeFileSync(path.join(root, 'all-ads.csv'), toCsv(allRows), 'utf8');
 writeFileSync(path.join(root, 'START-HERE.md'), startHere(summary), 'utf8');
@@ -114,8 +118,30 @@ function copyImage(row, adId, adDir) {
   const slug = row.format.replace(':', 'x');
   const card = row.carousel ? `card${row.carousel.position}_` : '';
   // Unique names keep files apart once they're all in Meta's media library.
-  copyFileSync(source, path.join(adDir, `${adId}_${card}${slug}_${sizes[row.format] ?? 'image'}${path.extname(source)}`));
+  exportImage(source, path.join(adDir, `${adId}_${card}${slug}_${sizes[row.format] ?? 'image'}${path.extname(source)}`));
   return 1;
+}
+
+// PNGs become JPEGs because a full export is several times smaller and Meta accepts both.
+function exportImage(source, target) {
+  if (imageFormat !== 'jpeg' || path.extname(source).toLowerCase() !== '.png') {
+    copyFileSync(source, target);
+    return;
+  }
+  const output = `${target.slice(0, -path.extname(target).length)}.jpg`;
+  const [tool, args] = converterFor(source, output);
+  const result = spawnSync(tool, args, { encoding: 'utf8' });
+  if (result.error || result.status !== 0 || !existsSync(output)) {
+    fail(`could not convert ${source} to JPEG: ${result.error?.message ?? result.stderr}`);
+  }
+}
+
+function converterFor(source, output) {
+  const onPath = (tool) => (process.env.PATH ?? '').split(path.delimiter).some((dir) => dir && existsSync(path.join(dir, tool)));
+  if (onPath('sips')) return ['sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', String(jpegQuality), source, '--out', output]];
+  if (onPath('magick')) return ['magick', [source, '-quality', String(jpegQuality), output]];
+  if (onPath('convert')) return ['convert', [source, '-quality', String(jpegQuality), output]];
+  return fail('JPEG export needs sips (macOS) or ImageMagick; install one, or pass --image-format png');
 }
 
 function copySheet(adId, files, campaign) {
@@ -229,7 +255,7 @@ function parseArgs(argv) {
       parsed.help = true;
     } else if (arg === '--no-zip') {
       parsed['no-zip'] = true;
-    } else if (arg === '--config' || arg === '--out-dir') {
+    } else if (['--config', '--out-dir', '--image-format', '--jpeg-quality'].includes(arg)) {
       const value = argv[index + 1];
       if (value === undefined || value.startsWith('--')) fail(`${arg} needs a value`);
       parsed[arg.slice(2)] = value;
@@ -266,5 +292,8 @@ Config:
 Options:
   --config <path>    Campaign config JSON (required). Paths are relative to it.
   --out-dir <path>   Where to write (default: next to the config).
-  --no-zip           Write the folders only.`);
+  --no-zip           Write the folders only.
+  --image-format <f> jpeg or png (default: jpeg). JPEG export needs sips
+                     (macOS) or ImageMagick.
+  --jpeg-quality <n> JPEG quality from 1 to 100 (default: 88).`);
 }
