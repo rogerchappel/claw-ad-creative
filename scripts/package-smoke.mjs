@@ -54,6 +54,7 @@ const allowed = new Set([
   'examples/render-job.example.json',
   'scripts/create-ad-batch.mjs',
   'scripts/create-device-creative-prompt.mjs',
+  'scripts/package-campaigns.mjs',
   'scripts/render-ad-creatives.mjs',
   'scripts/score-ad-results.mjs',
   'scripts/package-smoke.mjs',
