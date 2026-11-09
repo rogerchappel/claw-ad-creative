@@ -85,6 +85,37 @@ It also writes `manifest.json`, a `meta-copy.csv` with one row per file
 (ad set, ad name, primary text, headline, CTA, UTM link), and a
 `contact-sheet.html` grouped by ad set for review.
 
+### Creative tests
+
+To find winners quickly, add a `matrix` to a render job instead of writing each
+creative by hand:
+
+```json
+"matrix": {
+  "round": "r1",
+  "hooks": [{ "id": "h01", "type": "yes-question", "text": "Still writing site notes on *receipts?*", "primaryText": "Keep them in one place." }],
+  "layouts": [{ "id": "status", "template": "status", "color": "sunset" }, { "id": "caption", "template": "caption", "background": "field", "byline": false }],
+  "ctas": [{ "id": "c1", "text": "Get the free app", "metaCta": "INSTALL_MOBILE_APP", "closer": "Free on iPhone and iPad." }]
+}
+```
+
+It creates one ad set per hook and one ad per hook and layout, so spend splits
+evenly across hooks. The default `balanced` design rotates CTAs, so 10 hooks, 5
+layouts and 3 CTAs give 50 ads rather than 150, and each variable can still be
+read across many ads. `"design": "full"` makes every combination. A layout's
+`hookField` sets where the hook goes (default `headline`).
+
+After the test, export the ads from Ads Manager as CSV and score them:
+
+```bash
+npm run creative:score -- --manifest output/manifest.json --results meta-export.csv
+```
+
+The report ranks hooks, layouts and CTAs, pools each one across its ads, and
+lists what to carry into the next round. Verdicts use a strict bar because many
+variants are compared at once, and thin data is labelled as such. Small tests
+only find large differences; a variant with no clear difference isn't proven equal.
+
 Each creative picks one of sixteen visual styles: `device`, `photo`, `post`,
 `thread`, `notes`, `screenshot`, `compare`, `statement`, `scorecard`, `poll`,
 `search`, `ticket`, `calendar`, `status` (big text on a coloured background,
