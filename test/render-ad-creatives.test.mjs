@@ -134,6 +134,50 @@ test('renders the native status, caption and sticky styles', async () => {
   assert.match(await readFile(path.join(out, 'html', 'sticky_1x1.html'), 'utf8'), /<s>two<\/s>/);
 });
 
+test('expands a balanced test matrix and records each variable', async () => {
+  const hooks = ['one', 'two', 'three', 'four'].map((name, index) => ({ id: `h${index + 1}`, type: 'label', text: `Hook *${name}*`, primaryText: `Body ${name}.` }));
+  const layouts = [{ id: 'status', template: 'status' }, { id: 'photo', template: 'photo', background: 'photo' }, { id: 'search', template: 'search', hookField: 'body', query: 'q' }];
+  const ctas = [{ id: 'c1', text: 'Try it', metaCta: 'DOWNLOAD', closer: 'Free.' }, { id: 'c2', text: 'See more', metaCta: 'LEARN_MORE', closer: 'Look.' }];
+  const { jobFile, out } = await setup(undefined, { creatives: undefined, matrix: { round: 'r2', hooks, layouts, ctas }, defaults: { formats: ['4:5'] } });
+  const result = render(jobFile, out);
+  assert.equal(result.status, 0, result.stderr);
+
+  const { creatives } = JSON.parse(await readFile(path.join(out, 'manifest.json'), 'utf8'));
+  assert.equal(creatives.length, 12);
+  assert.equal(new Set(creatives.map((row) => row.adSet)).size, 4);
+  const first = creatives[0];
+  assert.deepEqual(first.test, { round: 'r2', hook: 'h1', hookType: 'label', layout: 'status', cta: 'c1' });
+  assert.equal(first.id, 'r2-h1-status-c1');
+  assert.equal(first.primaryText, 'Body one. Free.');
+  assert.equal(first.headline, 'Hook one');
+  assert.equal(first.cta, 'DOWNLOAD');
+  for (const hook of ['h1', 'h2', 'h3', 'h4']) {
+    const seen = new Set(creatives.filter((row) => row.test.hook === hook).map((row) => row.test.cta));
+    assert.equal(seen.size, 2, `${hook} should see both CTAs`);
+  }
+  const photo = await readFile(path.join(out, 'html', 'r2-h1-photo-c2_4x5.html'), 'utf8');
+  assert.match(photo, /See more/);
+  assert.match(await readFile(path.join(out, 'html', 'r2-h1-search-c1_4x5.html'), 'utf8'), /Hook <em>one<\/em>/);
+  assert.match(await readFile(path.join(out, 'meta-copy.csv'), 'utf8'), /,"h1","status","c1"/);
+});
+
+test('full matrix design multiplies CTAs and bad matrices fail', async () => {
+  const hooks = [{ id: 'h1', text: 'Hook' }];
+  const layouts = [{ id: 'status', template: 'status' }];
+  const ctas = [{ id: 'c1' }, { id: 'c2' }];
+  const { jobFile, out } = await setup(undefined, { creatives: undefined, matrix: { hooks, layouts, ctas, design: 'full' } });
+  assert.equal(render(jobFile, out).status, 0);
+  const { creatives } = JSON.parse(await readFile(path.join(out, 'manifest.json'), 'utf8'));
+  assert.deepEqual([...new Set(creatives.map((row) => row.id))], ['r1-h1-status-c1', 'r1-h1-status-c2']);
+
+  for (const [matrix, pattern] of [[{ hooks, layouts: [] }, /at least one hook/], [{ hooks: [{ id: 'Bad', text: 'x' }], layouts }, /lowercase/], [{ hooks: [{ id: 'h1' }], layouts }, /needs text/], [{ hooks, layouts, design: 'x' }, /balanced or full/]]) {
+    const bad = await setup(undefined, { creatives: undefined, matrix });
+    const failed = render(bad.jobFile, bad.out);
+    assert.equal(failed.status, 1);
+    assert.match(failed.stderr, pattern);
+  }
+});
+
 test('rejects an unknown footer value', async () => {
   const { jobFile, out } = await setup([{ id: 'a', template: 'statement', footer: 'big' }]);
   const result = render(jobFile, out);
