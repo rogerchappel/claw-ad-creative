@@ -128,8 +128,10 @@ version of the ad copy alongside the short one.
 
 `npm run creative:package -- --config campaigns.json` copies rendered ads into
 folders that follow Ads Manager (campaign, ad set, ad), writes setup notes at
-each level and a `copy.txt` per ad, and zips the result. Run with `--help` for
-the config format.
+each level and a `copy.txt` per ad, and zips the result. PNGs are exported as
+JPEGs by default, which makes the export several times smaller; this needs
+`sips` (macOS) or ImageMagick. Pass `--image-format png` to keep PNGs. Run with
+`--help` for the config format.
 
 Each creative picks one of sixteen visual styles: `device`, `photo`, `post`,
 `thread`, `notes`, `screenshot`, `compare`, `statement`, `scorecard`, `poll`,
