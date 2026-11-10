@@ -7,6 +7,7 @@ Use these files to set up and operate an agentic ad creative workflow:
 - `mcp-installation.md` - MCP server choices and credential boundaries.
 - `workflow.md` - research-to-report operating loop.
 - `app-install-setup.md` - one-time Meta and iOS setup for app install ads.
+- `running-app-install-ads.md` - build, launch, watch and score app install campaigns.
 - `report-template.md` - performance report structure.
 
 The public docs avoid platform secrets and account-specific IDs. Keep private
