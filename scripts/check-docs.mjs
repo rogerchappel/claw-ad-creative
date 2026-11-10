@@ -11,6 +11,8 @@ const required = [
   'docs/workflow.md',
   'docs/report-template.md',
   'docs/app-install-setup.md',
+  'docs/running-app-install-ads.md',
+  'skills/facebook-ad-creative/references/app-install-campaigns.md',
   'examples/site-visit-app-brief.md',
   'examples/openclaw-agent-config.md',
   'skills/facebook-ad-creative/SKILL.md',
