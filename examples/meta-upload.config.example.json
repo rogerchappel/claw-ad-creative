@@ -1,0 +1,22 @@
+{
+  "campaignFolder": "01 Hook Test",
+  "campaignName": "01 Hook Test",
+  "manifest": "output/round-1/manifest.json",
+  "distDir": "dist/fieldbook-campaigns",
+
+  "pageId": "REPLACE_WITH_FACEBOOK_PAGE_ID",
+  "instagramUserId": "",
+  "appId": "REPLACE_WITH_META_APP_ID",
+  "appStoreUrl": "REPLACE_WITH_APP_STORE_URL",
+
+  "dailyBudgetCents": 3000,
+  "startTime": "2030-01-07T00:00:00+00:00",
+  "endTime": "2030-01-14T00:00:00+00:00",
+  "countries": ["US"],
+  "os": "iOS",
+  "skadnetworkAttribution": false,
+
+  "imageSize": "4x5_1080x1350",
+  "callToAction": "INSTALL_MOBILE_APP",
+  "copy": "short"
+}
