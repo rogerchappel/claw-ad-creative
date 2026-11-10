@@ -1,12 +1,13 @@
 ---
 name: facebook-ad-creative
-description: Research Meta/Facebook ads, develop high-performing ad concepts, generate asset prompts, prepare safe draft ads, and report performance.
+description: Research Meta/Facebook ads, develop ad concepts, render creative, set up and run app install campaigns on Facebook and Instagram, monitor them, and find the winning and losing ads.
 ---
 
 # Facebook Ad Creative
 
 Use this skill when asked to make, research, brief, generate, draft, or report on
-Meta/Facebook ad creative.
+Meta/Facebook ad creative, or to set up, run, monitor or score an app install
+campaign on Facebook and Instagram.
 
 ## Operating Mode
 
@@ -66,6 +67,15 @@ Default to:
 7. If ad ops is requested, create only approved drafts or paused ads unless the
    user explicitly approves publishing.
 8. If performance reporting is requested, read `references/reporting.md`.
+
+## App Install Campaigns
+
+When the goal is installs of a mobile app, read
+`references/app-install-campaigns.md` before doing anything else. It covers the
+setup checks, the campaign shape, building paused campaigns with the Meta ads
+MCP server or the `meta` CLI, daily monitoring, and scoring winners and losers.
+The step-by-step guides for the human are `docs/app-install-setup.md` and
+`docs/running-app-install-ads.md`.
 
 ## Output Standards
 
