@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added app install guides (Meta and iOS setup, running and scoring campaigns),
+  an agent playbook for them, and `creative:upload` to build paused campaigns
+  with the Meta Ads CLI.
 - Added CrewCMD/OpenClaw installable skill metadata.
 - Added vault-backed config schema for fal.ai, Ads Library, Higgsfield, and
   optional Meta Ads credentials.
