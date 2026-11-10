@@ -87,7 +87,7 @@ Pick one route.
 Facebook SDK route:
 
 1. In Xcode choose **File > Add Package Dependencies** and add
-   `https://github.com/facebook/facebook-ios-sdk`. Select `FacebookCore`.
+   `https://github.com/meta/facebook-ios-sdk`. Select `FacebookCore`.
 2. Add these keys to `Info.plist`, using your own values:
 
    ```xml
