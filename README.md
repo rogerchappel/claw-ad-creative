@@ -153,6 +153,25 @@ install paths, or the Playwright browser cache). `--html-only` skips
 screenshots. The command never calls Meta or an image model, and it only
 renders the copy and assets you put in the job.
 
+## App Install Campaigns
+
+To market a mobile app on Facebook and Instagram end to end:
+
+1. `docs/app-install-setup.md` - one-time setup: the Meta app, adding your iOS
+   app, linking the ad account, install tracking in the app, and connecting the
+   Meta ads MCP server or the Meta Ads CLI.
+2. `docs/running-app-install-ads.md` - plan a hook test, build the campaign
+   paused, launch it, watch it, score it, and pause the losers.
+3. `skills/facebook-ad-creative/references/app-install-campaigns.md` - the same
+   playbook written for the agent.
+
+`npm run creative:upload -- --config my-upload.json` builds a packaged campaign
+in Meta through the Meta Ads CLI: one campaign, one ad set per hook, one ad per
+creative, all paused. Without a flag it only prints the commands; `--validate`
+asks Meta to check the campaign; `--run` creates it. Start from
+`examples/meta-upload.config.example.json`. It has not been proven against every
+account type, so read the "Known gaps" list in the running guide first.
+
 ## Install Setup
 
 Check local prerequisites:
@@ -320,6 +339,8 @@ created.
 - `docs/crewcmd-installation.md` - installable skill, vault, and MCP setup.
 - `docs/mcp-installation.md` - MCP choices, credential notes, and scope.
 - `docs/workflow.md` - end-to-end research, asset, approval, launch, report loop.
+- `docs/app-install-setup.md` - one-time Meta and iOS setup for app install ads.
+- `docs/running-app-install-ads.md` - build, launch, watch and score app install campaigns.
 - `docs/report-template.md` - concise performance report format.
 - `examples/site-visit-app-brief.md` - example brief for a site visit app.
 - `examples/openclaw-agent-config.md` - example runtime/tool scoping notes.
