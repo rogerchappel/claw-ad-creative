@@ -49,6 +49,7 @@ const allowed = new Set([
   'docs/mcp-installation.md',
   'docs/ORCHESTRATION.md',
   'docs/README.md',
+  'docs/app-install-setup.md',
   'docs/report-template.md',
   'docs/TASKS.md',
   'examples/render-job.example.json',
