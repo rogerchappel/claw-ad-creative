@@ -80,10 +80,22 @@ test('rejects missing, unreadable, and non-regular source assets before creating
     const logo = path.join(root, 'logo.png');
     await writeFile(logo, 'LOGO-SOURCE');
     await chmod(logo, 0o000);
+    let readable = true;
+    try {
+      await readFile(logo);
+    } catch (error) {
+      if (error.code === 'EACCES') readable = false;
+      else throw error;
+    }
     const { out, result } = await runPrompt(['--logo', logo]);
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /source asset is not readable/);
-    await assert.rejects(readFile(out), { code: 'ENOENT' });
+    if (readable) {
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(JSON.parse(await readFile(out, 'utf8')).brand.logo, logo);
+    } else {
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /source asset is not readable/);
+      await assert.rejects(readFile(out), { code: 'ENOENT' });
+    }
   });
 });
 
