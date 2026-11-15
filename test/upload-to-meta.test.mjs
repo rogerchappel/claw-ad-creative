@@ -64,6 +64,25 @@ test('dry run prints paused commands and calls nothing', async () => {
   await assert.rejects(readFile(path.join(root, 'calls.log')));
 });
 
+test('--preview explicitly prints without calling Meta or writing state', async () => {
+  const root = await setup();
+  const result = upload(root, ['--preview']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Explicit preview: nothing is being created/);
+  assert.match(result.stdout, /--status PAUSED/);
+  await assert.rejects(readFile(path.join(root, 'calls.log')));
+  await assert.rejects(readFile(path.join(root, 'upload.state.json')));
+});
+
+test('rejects conflicting modes and missing config path', () => {
+  const conflicting = spawnSync(process.execPath, ['scripts/upload-to-meta.mjs', '--config', 'config.json', '--preview', '--run'], { encoding: 'utf8' });
+  assert.equal(conflicting.status, 1);
+  assert.match(conflicting.stderr, /use only one/);
+  const missing = spawnSync(process.execPath, ['scripts/upload-to-meta.mjs', '--config', '--preview'], { encoding: 'utf8' });
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /requires a file path/);
+});
+
 test('--run creates each object once and resumes from saved state', async () => {
   const root = await setup();
   const first = upload(root, ['--run']);

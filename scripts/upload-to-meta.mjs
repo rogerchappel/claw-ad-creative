@@ -10,7 +10,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const args = process.argv.slice(2);
-const known = new Set(['--config', '--run', '--validate', '--help', '-h']);
+const known = new Set(['--config', '--run', '--validate', '--preview', '--help', '-h']);
 const fail = (message) => {
   console.error(`upload-to-meta: ${message}`);
   process.exit(1);
@@ -18,15 +18,19 @@ const fail = (message) => {
 
 for (let i = 0; i < args.length; i += 1) {
   if (!known.has(args[i])) fail(`unknown option ${args[i]}; run with --help`);
-  if (args[i] === '--config') i += 1;
+  if (args[i] === '--config') {
+    if (!args[i + 1] || args[i + 1].startsWith('--')) fail('--config requires a file path');
+    i += 1;
+  }
 }
 if (args.includes('--help') || args.includes('-h')) {
-  console.log(`Usage: node scripts/upload-to-meta.mjs --config <file> [--validate | --run]
+  console.log(`Usage: node scripts/upload-to-meta.mjs --config <file> [--preview | --validate | --run]
 
 Creates one app install campaign with the Meta Ads CLI: a campaign, one ad set
 per "adSet" in the manifest and one ad per creative. Everything is PAUSED.
 
   (no flag)    print the commands and create nothing
+  --preview    explicitly print the commands and create nothing
   --validate   ask Meta to validate the campaign settings and create nothing
   --run        create the campaign, ad sets, creatives and ads
 
@@ -61,7 +65,8 @@ const configArg = configIndex >= 0 ? args[configIndex + 1] : undefined;
 if (!configArg) fail('missing required --config path; run with --help');
 const RUN = args.includes('--run');
 const VALIDATE = args.includes('--validate');
-if (RUN && VALIDATE) fail('use --validate or --run, not both');
+const PREVIEW = args.includes('--preview');
+if ([RUN, VALIDATE, PREVIEW].filter(Boolean).length > 1) fail('use only one of --preview, --validate or --run');
 
 const readJson = (file, label) => {
   try {
@@ -243,7 +248,7 @@ if (skippedCarousels) console.log(`Skipped ${skippedCarousels} carousel images; 
 console.log('');
 
 if (!RUN && !VALIDATE) {
-  console.log('Nothing is being created. These are the commands --run would use:\n');
+  console.log(`${PREVIEW ? 'Explicit preview: nothing is being created.' : 'Nothing is being created.'} These are the commands --run would use:\n`);
   show(campaignArgs());
   for (const [name, list] of adSets) {
     show(adSetArgs(name, '<CAMPAIGN_ID>'));
