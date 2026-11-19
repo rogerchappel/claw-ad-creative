@@ -54,6 +54,8 @@ test('ranks live ads by days running, merges copies and drops ended ones', async
   assert.match(csv, /"'=HYPERLINK\(""x""\)"/);
   const html = await readFile(path.join(out, 'ad-board.html'), 'utf8');
   assert.match(html, /inference, not a result/);
+  // Cards use display:flex, which would otherwise override the hidden attribute the filters set.
+  assert.match(html, /\[hidden\]\{display:none!important\}/);
   assert.doesNotMatch(html, /<script>alert/);
 });
 
