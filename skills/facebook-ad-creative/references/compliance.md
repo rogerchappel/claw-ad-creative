@@ -29,6 +29,20 @@ claim is borderline, say so and suggest the person checks it.
   Talk about the product and the situation, not the viewer's traits.
 - Comparisons must be fair and checkable. Don't name competitors unless the
   person has approved it and the comparison is accurate.
+- A "cause" or "mechanism" (why the problem happens, why other fixes fail,
+  why this works) is a claim. It needs a source on file, not just a story the
+  buyer finds believable.
+
+## Fear, Urgency And People On Screen
+
+- Keep fear proportionate to the real risk. Never tell people to stop, mix or
+  avoid a medicine or treatment, and never imply harm from one, in an ad.
+- Urgency and scarcity only when true: a real deadline, a real event date,
+  real limited stock. No invented countdowns, "last chance" or "selling out".
+- Don't sexualise presenters or use revealing outfits as a hook. Meta's
+  policies restrict it, and it erodes trust with the buyer.
+- Nobody on screen poses as a doctor, specialist or customer they aren't. Label
+  dramatisations as such.
 
 ## Competitor Material
 
