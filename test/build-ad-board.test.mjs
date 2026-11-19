@@ -82,3 +82,31 @@ test('exits non-zero when nothing is live', async () => {
   assert.equal(result.status, 1);
   assert.match(result.stdout, /0 live ads/);
 });
+
+test('labels dynamic template ads and keeps them apart', async () => {
+  const dynamic = (id) => apify(id, 100, { snapshot: { title: '{{product.name}}', body: { text: '{{product.brand}}' }, displayFormat: 'DCO' } });
+  const { result, out } = await build([dynamic('1'), dynamic('2')]);
+  assert.equal(result.status, 0, result.stderr);
+  const board = JSON.parse(await readFile(path.join(out, 'board.json'), 'utf8'));
+  assert.equal(board.ads.length, 2);
+  assert.ok(board.ads.every((ad) => ad.dynamic));
+  assert.equal(board.summary.dynamic, 2);
+  const html = await readFile(path.join(out, 'ad-board.html'), 'utf8');
+  assert.match(html, /Dynamic ad: the text and image vary per viewer/);
+  assert.doesNotMatch(html, /\{\{product\.name\}\}/);
+});
+
+test('keeps only listed competitors and drops named advertisers', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'claw-board-list-'));
+  roots.push(root);
+  const list = path.join(root, 'competitors.json');
+  await writeFile(list, JSON.stringify({ competitors: [{ name: 'Brand A', aliases: ['Brand A Pty Ltd'] }, { name: 'Brand C' }] }));
+  const items = [apify('1', 50), apify('2', 40, { pageName: 'Brand A Pty Ltd' }), apify('3', 30, { pageName: 'Some Band' }), apify('4', 20, { pageName: 'Brand C' })];
+  const { result, out } = await build(items, ['--competitors', list, '--drop', 'brand c']);
+  assert.equal(result.status, 0, result.stderr);
+  const board = JSON.parse(await readFile(path.join(out, 'board.json'), 'utf8'));
+  assert.deepEqual(board.ads.map((ad) => ad.id), ['1', '2']);
+  assert.equal(board.summary.offList, 2);
+  assert.deepEqual(board.summary.offListAdvertisers, ['Brand C', 'Some Band']);
+  assert.match(result.stdout, /2 from 2 advertisers not on the list/);
+});
