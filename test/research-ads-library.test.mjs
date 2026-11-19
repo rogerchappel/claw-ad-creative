@@ -124,3 +124,63 @@ test('per-search over 100 ads in total still needs the person\'s yes', async () 
   assert.match(result.stdout, /300 in total/);
   assert.match(result.stdout, /--allow-larger/);
 });
+
+async function flakyApify({ dropPolls }) {
+  const requests = [];
+  let polls = 0;
+  const server = createServer((request, response) => {
+    requests.push(`${request.method} ${request.url}`);
+    const send = (data) => response.end(JSON.stringify(data));
+    if (request.method === 'POST' && request.url.startsWith('/v2/acts/')) return send({ data: { id: 'run9', status: 'RUNNING' } });
+    if (request.url.startsWith('/v2/actor-runs/run9')) {
+      polls += 1;
+      if (polls <= dropPolls) return request.socket.destroy();
+      return send({ data: { id: 'run9', status: 'SUCCEEDED', defaultDatasetId: 'ds9', usageTotalUsd: 0.3 } });
+    }
+    if (request.url.startsWith('/v2/datasets/ds9/items')) return send([{ adArchiveID: '9' }]);
+    response.statusCode = 404;
+    response.end('{}');
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  cleanups.push(() => new Promise((resolve) => server.close(resolve)));
+  return { requests, base: `http://127.0.0.1:${server.address().port}/v2` };
+}
+
+async function tempOut(prefix) {
+  const root = await mkdtemp(path.join(tmpdir(), prefix));
+  cleanups.push(() => rm(root, { recursive: true, force: true }));
+  return path.join(root, 'items.json');
+}
+
+test('retries a dropped connection while waiting instead of losing the run', async () => {
+  const { base } = await flakyApify({ dropPolls: 2 });
+  const out = await tempOut('claw-research-flaky-');
+  const result = await run(['--keyword', 'x', '--confirm', '--out', out], { APIFY_TOKEN: 't', APIFY_BASE_URL: base, APIFY_RETRY_MS: '10' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Lost the connection to Apify/);
+  assert.equal(JSON.parse(await readFile(out, 'utf8')).length, 1);
+});
+
+test('saves a receipt at start, then resumes the same run without starting another', async () => {
+  const { requests, base } = await flakyApify({ dropPolls: 99 });
+  const out = await tempOut('claw-research-resume-');
+  const first = await run(['--keyword', 'x', '--confirm', '--out', out], { APIFY_TOKEN: 't', APIFY_BASE_URL: base, APIFY_RETRY_MS: '1' });
+  assert.equal(first.status, 1);
+  const receiptFile = out.replace(/\.json$/, '.run.json');
+  assert.equal(JSON.parse(await readFile(receiptFile, 'utf8')).runId, 'run9');
+  assert.match(first.stdout, /--resume .*items\.run\.json/);
+
+  const { requests: later, base: laterBase } = await flakyApify({ dropPolls: 0 });
+  const second = await run(['--resume', receiptFile, '--out', out], { APIFY_TOKEN: 't', APIFY_BASE_URL: laterBase });
+  assert.equal(second.status, 0, second.stderr);
+  assert.match(second.stdout, /Nothing new is started or charged/);
+  assert.equal(later.filter((r) => r.startsWith('POST')).length, 0);
+  assert.equal(requests.filter((r) => r.startsWith('POST /v2/acts/')).length, 1);
+  assert.equal(JSON.parse(await readFile(receiptFile, 'utf8')).status, 'SUCCEEDED');
+});
+
+test('resume rejects anything that is not a run ID or receipt', async () => {
+  const result = await run(['--resume', '../../etc', '--out', 'x.json'], { APIFY_TOKEN: 't' });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /needs a run ID/);
+});
