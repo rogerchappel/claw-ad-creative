@@ -50,5 +50,8 @@
   "bugs": {
     "url": "https://github.com/rogerchappel/claw-ad-creative/issues"
   },
-  "homepage": "https://github.com/rogerchappel/claw-ad-creative#readme"
+  "homepage": "https://github.com/rogerchappel/claw-ad-creative#readme",
+  "engines": {
+    "node": ">=22 <25"
+  }
 }
