@@ -38,6 +38,7 @@ try {
       confirm: { type: 'boolean', default: false },
       'allow-larger': { type: 'boolean', default: false },
       check: { type: 'boolean', default: false },
+      resume: { type: 'string' },
       help: { type: 'boolean', short: 'h', default: false }
     }
   }));
@@ -51,7 +52,7 @@ if (options.help) {
 }
 
 try {
-  process.exitCode = options.check ? await check() : await research();
+  process.exitCode = options.check ? await check() : options.resume ? await resume() : await research();
 } catch (error) {
   fail(error.message);
 }
@@ -91,33 +92,89 @@ async function research() {
   const input = { startUrls: urls.map((url) => ({ url })), resultsLimit: Math.max(1, Math.floor(maxItems / urls.length)), activeStatus: 'active' };
   const waitMinutes = positiveNumber(options['wait-minutes'], '--wait-minutes');
   const query = new URLSearchParams({ maxItems: String(maxItems), maxTotalChargeUsd: cap.toFixed(2), timeout: String(Math.round(waitMinutes * 60)) });
-  let run = (await call(token, 'POST', `/acts/${ACTOR}/runs?${query}`, input)).data;
-  console.log(`Started run ${run.id}.`);
+  const run = (await call(token, 'POST', `/acts/${ACTOR}/runs?${query}`, input)).data;
+  const receipt = { actor: ACTOR, runId: run.id, status: run.status, items: 0, maxItems, capUsd: cap, estimateUsd: estimate, chargedUsd: null, searches: urls };
+  // Saved before waiting, so a dropped connection never loses a run that is already being paid for.
+  writeReceipt(options.out, receipt);
+  console.log(`Started run ${run.id}. If this connection drops, collect it without paying again: --resume ${receiptPath(options.out)} --out ${options.out}`);
+  return finish(token, run, receipt, { abortOnDeadline: true });
+}
 
+// Collect a run that already started: no new run, no new spend.
+async function resume() {
+  if (!options.out) fail('--out is required with --resume');
+  let receipt = { actor: ACTOR, runId: options.resume };
+  if (/\.json$/i.test(options.resume)) {
+    try {
+      receipt = JSON.parse(readFileSync(options.resume, 'utf8'));
+    } catch (error) {
+      fail(`--resume could not read ${options.resume}: ${error.message}`);
+    }
+  }
+  if (!/^[A-Za-z0-9]+$/.test(String(receipt.runId ?? ''))) fail('--resume needs a run ID or the .run.json receipt a run wrote');
+  if (options['max-items']) receipt.maxItems = positiveInteger(options['max-items'], '--max-items');
+  receipt.maxItems ??= 1000;
+  const token = apifyToken();
+  const run = (await retry(() => call(token, 'GET', `/actor-runs/${receipt.runId}`))).data;
+  console.log(`Collecting run ${run.id} (${run.status}). Nothing new is started or charged.`);
+  return finish(token, run, receipt, { abortOnDeadline: false });
+}
+
+async function finish(token, started, receipt, { abortOnDeadline }) {
+  let run = started;
+  const waitMinutes = positiveNumber(options['wait-minutes'], '--wait-minutes');
   const deadline = Date.now() + waitMinutes * 60_000;
   while (!TERMINAL.has(run.status)) {
     if (Date.now() > deadline) {
+      if (!abortOnDeadline) {
+        console.log(`Run ${run.id} is still ${run.status}. Resume again later; nothing was aborted.`);
+        writeReceipt(options.out, { ...receipt, status: run.status });
+        return 3;
+      }
       console.log('The run passed --wait-minutes, so it is being aborted to stop the spend.');
-      run = (await call(token, 'POST', `/actor-runs/${run.id}/abort`, {})).data;
+      run = (await retry(() => call(token, 'POST', `/actor-runs/${run.id}/abort`, {}))).data;
       break;
     }
     const wait = Math.max(1, Math.min(60, Math.round((deadline - Date.now()) / 1000)));
-    run = (await call(token, 'GET', `/actor-runs/${run.id}?waitForFinish=${wait}`)).data;
+    run = (await retry(() => call(token, 'GET', `/actor-runs/${run.id}?waitForFinish=${wait}`))).data;
   }
 
   let items = [];
   if (run.defaultDatasetId) {
-    const found = await call(token, 'GET', `/datasets/${run.defaultDatasetId}/items?format=json&clean=true&limit=${maxItems}`);
-    if (Array.isArray(found)) items = found.slice(0, maxItems);
+    const found = await retry(() => call(token, 'GET', `/datasets/${run.defaultDatasetId}/items?format=json&clean=true&limit=${receipt.maxItems}`));
+    if (Array.isArray(found)) items = found.slice(0, receipt.maxItems);
   }
   mkdirSync(path.dirname(path.resolve(options.out)), { recursive: true });
   writeFileSync(options.out, `${JSON.stringify(items, null, 1)}\n`);
-  const receipt = { actor: ACTOR, runId: run.id, status: run.status, items: items.length, maxItems, capUsd: cap, estimateUsd: estimate, chargedUsd: run.usageTotalUsd ?? null, searches: urls };
-  writeFileSync(options.out.replace(/\.json$/i, '') + '.run.json', `${JSON.stringify(receipt, null, 1)}\n`);
+  writeReceipt(options.out, { ...receipt, status: run.status, items: items.length, chargedUsd: run.usageTotalUsd ?? null });
   const charged = typeof run.usageTotalUsd === 'number' ? `$${run.usageTotalUsd.toFixed(2)}` : 'see the Apify usage page';
   console.log(`Finished with status ${run.status}: ${items.length} ads saved to ${options.out}. Charged: ${charged}.`);
   if (run.status !== 'SUCCEEDED' && items.length) console.log('The run did not finish cleanly, often because it reached the cap. These results are partial.');
   return run.status === 'SUCCEEDED' || items.length ? 0 : 1;
+}
+
+function receiptPath(out) {
+  return `${out.replace(/\.json$/i, '')}.run.json`;
+}
+
+function writeReceipt(out, receipt) {
+  mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
+  writeFileSync(receiptPath(out), `${JSON.stringify(receipt, null, 1)}\n`);
+}
+
+// Status and dataset reads are safe to repeat, so a dropped connection is retried instead of
+// ending the collection of a run that is already being paid for.
+async function retry(read, attempts = 5) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await read();
+    } catch (error) {
+      if (!error.transient || attempt >= attempts) throw error;
+      const delay = (Number(process.env.APIFY_RETRY_MS) || 2000) * attempt;
+      console.log(`Lost the connection to Apify (${error.message}); trying again in ${Math.round(delay / 1000)}s.`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
 }
 
 async function check() {
@@ -164,10 +221,14 @@ async function call(token, method, route, body) {
       body: body === undefined ? undefined : JSON.stringify(body)
     });
   } catch (error) {
-    throw new Error(`could not reach Apify (${error.cause?.code ?? error.message})`);
+    throw Object.assign(new Error(`could not reach Apify (${error.cause?.code ?? error.message})`), { transient: true });
   }
-  if (!response.ok) throw new Error(httpMessage(response.status));
-  return response.json();
+  if (!response.ok) throw Object.assign(new Error(httpMessage(response.status)), { transient: response.status === 429 || response.status >= 500 });
+  try {
+    return await response.json();
+  } catch (error) {
+    throw Object.assign(new Error(`the response from Apify was cut off (${error.message})`), { transient: true });
+  }
 }
 
 function httpMessage(status) {
@@ -243,6 +304,8 @@ Options:
   --confirm             The person approved the estimate; start the run
   --allow-larger        The person approved more than ${DEFAULT_ITEMS} ads
   --check               Prove the token works without spending anything
+  --resume <id|file>    Collect a run that already started, by its ID or the .run.json
+                        receipt written when it started. Starts and charges nothing
 
 Environment:
   APIFY_TOKEN           Apify API token (never printed)
