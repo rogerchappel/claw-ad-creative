@@ -53,9 +53,10 @@ does not count.
 
 **Don't fix it by editing the ad.** Saving a change on the ad also clears the
 error, but Ads Manager rewrites the creative as a plain single-image ad: the
-headline, the description and every image except the first are dropped. If that
-has already happened, have the agent send the creative again, then save a change
-on the ad set.
+headline, the description and every image except the first are dropped. That
+includes quick tricks such as switching the ad's format to carousel and back to
+single image. If that has already happened, have the agent send the creative
+again, then save a change on the ad set.
 
 **Any creative change from the agent brings the error back.** Do all creative
 work through the agent first, and the ad-set step last.
