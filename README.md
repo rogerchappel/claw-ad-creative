@@ -76,6 +76,28 @@ the UI instead of pasted into prompts or config files.
 
 For installable setup details, see `docs/crewcmd-installation.md`.
 
+### Competitor research CLI
+
+Pull live competitor ads from the public Meta Ad Library (through Apify's
+scraper, `APIFY_TOKEN`), rank them by days running, and check new copy against
+them:
+
+```bash
+npm run research:ads -- --page https://www.facebook.com/<competitor> --keyword "<words>" --country AU
+npm run research:ads -- --page ... --keyword ... --country AU --confirm --out research/items.json
+npm run research:board -- --items research/items.json --out research/board
+npm run creative:overlap -- --copy output/meta-copy.csv --against research/board/board.json
+```
+
+`research:ads` prints a cost estimate and stops unless `--confirm` is passed. It
+caps every run at the ad count and a dollar limit, and refuses anything above
+the owner's `APIFY_MAX_USD` ceiling (default $5). Meta's own Ad Library API is
+not used because outside the EU and UK it only returns political and issue ads.
+`research:board` writes `ad-board.html`, `ads.csv` and `board.json`; pass the
+previous `board.json` with `--previous` to see which long runners stopped.
+`creative:overlap` exits 2 when our copy shares a run of 5+ words with a
+competitor ad. See `skills/facebook-ad-creative/references/research.md`.
+
 ### Render CLI
 
 `npm run creative:render -- --job path/to/render-job.json` turns a JSON job
