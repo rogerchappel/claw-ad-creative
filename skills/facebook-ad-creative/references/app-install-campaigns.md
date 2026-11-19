@@ -61,12 +61,32 @@ frequent. Value optimisation through the API is allow-list only.
 3. Build paused, by one of:
    - `npm run creative:upload -- --config <file>`: dry run first, then
      `--validate`, then `--run` after a yes. Needs the `meta` CLI.
-   - MCP tools: `ads_get_ad_accounts`, `ads_get_ad_account_pages`,
-     `ads_create_campaign`, `ads_create_ad_set`, `ads_create_creative`,
-     `ads_create_ad`. Check `ads_get_ad_preview` for each ad.
-4. Report what was created, with names and IDs, and what still needs doing by
-   hand (extra image sizes, carousels).
-5. The human activates, or tells you to (`ads_activate_entity`).
+   - MCP tools, in this order (details and the creative JSON are in
+     `docs/meta-ads-mcp-troubleshooting.md`):
+     1. `ads_get_ad_accounts`, `ads_get_ad_account_pages`, `ads_get_ig_accounts`.
+        If the brand's Instagram account isn't listed, ask the human to link it
+        to the Page and ad account before building ads.
+     2. `ads_create_campaign` and `ads_create_ad_set`, then stage
+        `{"status":"PAUSED"}` on each campaign with `ads_update_entity`.
+     3. Ask the human to upload every image size through the Ads Manager image
+        picker (**Upload**, Account tab). Find them with `ads_get_ad_images` by
+        file name.
+     4. `ads_create_ad` with an inline creative: `object_story_spec` with
+        `page_id` and `instagram_user_id`, plus an `asset_feed_spec` with
+        `optimization_type: PLACEMENT`, the 4:5, 9:16 and 1:1 images, and the
+        primary text, headline and description from the manifest. Don't use
+        `ads_create_creative`; it fails with error #1885183.
+     5. Preview each ad with `ads_get_ad_preview`.
+     6. Ask the human to reload Ads Manager, then make and save one real change
+        on each **ad set**. That clears #1885183. Tell them not to edit the ads:
+        an ad-level save drops the headline, description and extra images.
+     7. Read the draft back with `ads_get_ad_entities` (`object_state=draft`),
+        save it to a file and run `node scripts/check-meta-drafts.mjs --drafts
+        <file> --manifest <manifest> --store-url <url>`. Fix every FAIL before
+        reporting the ads as ready.
+4. Report what was created, with names and IDs, the check result, and what
+   still needs doing by hand (carousels).
+5. The human publishes and activates, or tells you to (`ads_activate_entity`).
 
 Keep ad names equal to the creative IDs in the manifest. The scorer matches on
 them.
