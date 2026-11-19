@@ -12,6 +12,7 @@ const required = [
   'docs/report-template.md',
   'docs/app-install-setup.md',
   'docs/running-app-install-ads.md',
+  'docs/meta-ads-mcp-troubleshooting.md',
   'skills/facebook-ad-creative/references/app-install-campaigns.md',
   'examples/site-visit-app-brief.md',
   'examples/openclaw-agent-config.md',
