@@ -75,6 +75,18 @@ Pick the first route that works.
    npm run research:ads -- --competitors competitors.json --per-search 5 --allow-larger --confirm --out research/<brand>/survey.json
    ```
 
+   **If the connection drops, never just run it again.** The run keeps going
+   (and costing) on Apify's side. `research:ads` writes a `.run.json` receipt
+   the moment a run starts and retries dropped reads while it waits. If it
+   still gives up, collect the same run for free:
+
+   ```sh
+   npm run research:ads -- --resume research/<brand>/survey.run.json --out research/<brand>/survey.json
+   ```
+
+   Only start a new run if the receipt shows the run failed or was aborted, and
+   only after a fresh yes.
+
 2. **An Ads Library MCP or another hosted provider**, if the runtime has one.
    Save results as a JSON list in the hand-written shape below.
 
