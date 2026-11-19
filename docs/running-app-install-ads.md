@@ -73,8 +73,13 @@ Known gaps, because Meta's CLI docs have no app install example:
 Ask the agent to build the same structure with `ads_create_campaign`,
 `ads_create_ad_set`, `ads_create_creative` and `ads_create_ad`. Have it call
 `ads_get_field_context` first to learn the accepted fields, because Meta's docs
-don't publish the tool parameters. Whether the creative tool can upload a local
-image file is not confirmed; if it can't, use the upload script for creatives.
+don't publish the tool parameters.
+
+In practice a human still has three jobs: upload the images into the ad
+account's image library through Ads Manager, open each ad the agent made and
+save it with a real edit (this clears error #1885183), and publish. See
+[Meta Ads MCP: What Can Go Wrong](meta-ads-mcp-troubleshooting.md) for the
+error, the upload route and the other gaps.
 
 ### By hand
 
