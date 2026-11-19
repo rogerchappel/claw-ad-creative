@@ -55,6 +55,7 @@ const allowed = new Set([
   'examples/meta-upload.config.example.json',
   'examples/competitors.example.json',
   'scripts/upload-to-meta.mjs',
+  'scripts/check-meta-drafts.mjs',
   'scripts/research-ads-library.mjs',
   'scripts/build-ad-board.mjs',
   'scripts/check-copy-overlap.mjs',
