@@ -52,6 +52,7 @@ const allowed = new Set([
   'docs/app-install-setup.md',
   'docs/running-app-install-ads.md',
   'examples/meta-upload.config.example.json',
+  'examples/competitors.example.json',
   'scripts/upload-to-meta.mjs',
   'scripts/research-ads-library.mjs',
   'scripts/build-ad-board.mjs',

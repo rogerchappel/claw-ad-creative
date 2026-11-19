@@ -83,9 +83,9 @@ scraper, `APIFY_TOKEN`), rank them by days running, and check new copy against
 them:
 
 ```bash
-npm run research:ads -- --page https://www.facebook.com/<competitor> --keyword "<words>" --country AU
-npm run research:ads -- --page ... --keyword ... --country AU --confirm --out research/items.json
-npm run research:board -- --items research/items.json --out research/board
+npm run research:ads -- --competitors competitors.json --per-search 5
+npm run research:ads -- --competitors competitors.json --per-search 5 --allow-larger --confirm --out research/survey.json
+npm run research:board -- --items research/survey.json --competitors competitors.json --out research/board
 npm run creative:overlap -- --copy output/meta-copy.csv --against research/board/board.json
 ```
 
@@ -93,8 +93,12 @@ npm run creative:overlap -- --copy output/meta-copy.csv --against research/board
 caps every run at the ad count and a dollar limit, and refuses anything above
 the owner's `APIFY_MAX_USD` ceiling (default $5). Meta's own Ad Library API is
 not used because outside the EU and UK it only returns political and issue ads.
-`research:board` writes `ad-board.html`, `ads.csv` and `board.json`; pass the
-previous `board.json` with `--previous` to see which long runners stopped.
+Start by mapping the field into a `competitors.json` (30 to 100+ advertisers
+with their Facebook Pages; see `examples/competitors.example.json`), survey a few
+ads from each, then pull deeper only on advertisers with long-running ads.
+`research:board` writes `ad-board.html`, `ads.csv` and `board.json`, keeps only
+listed competitors with `--competitors`, labels dynamic ads whose text is only a
+template, and with `--previous` shows which long runners stopped.
 `creative:overlap` exits 2 when our copy shares a run of 5+ words with a
 competitor ad. See `skills/facebook-ad-creative/references/research.md`.
 
