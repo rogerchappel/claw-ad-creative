@@ -3,21 +3,59 @@
 Goal: find the ads competitors keep paying for, and the angle behind each one.
 The output is a ranked list of angles worth testing, never a list of ads to copy.
 
-## Pick Who To Watch
+## Map The Field First
 
-Ask for, or find, 3 to 8 advertisers:
+Before pulling any ads, build the widest honest list of who competes for the
+same buyer, money or attention. A short list of obvious names misses where the
+patterns are. Aim for 30 to 100+ advertisers across these tiers:
 
-- direct competitors,
-- adjacent products that sell to the same buyer with the same problem,
-- aspirational advertisers with similar buyer psychology,
-- marketplaces, events, consultants and premium data products in the space.
+| Tier | Who |
+|---|---|
+| Direct | Products that do the same job for the same buyer |
+| Substitute | What buyers use instead today: spreadsheets, paper, agencies, consultants, generic tools |
+| Adjacent | Different product, same buyer and moment (events, marketplaces, data, services, communities) |
+| Platform | Marketplaces, auction houses, associations and media the buyer already trusts |
+| Aspirational | Brands in other markets selling to similar buyer psychology |
+| Overseas | The same category in other countries, which often advertises more |
 
-The best patterns often come from adjacent markets. If direct competitors run
-few or no ads, say so: an empty paid channel is a finding, not a failure.
+Sources: the person's own knowledge first, then search results, app store
+"similar apps", review sites, trade press, and conference and sponsor lists.
+
+Save the list as `competitors.json` (see `examples/competitors.example.json`):
+
+```json
+{ "country": "AU", "keywords": ["<words a rival ad would use>"],
+  "competitors": [{ "name": "Rival Co", "aliases": ["Rival Co Pty Ltd"], "page": "https://www.facebook.com/rivalco",
+                    "tier": "direct", "why": "Same buyer, same job" }] }
+```
+
+Every entry needs its Facebook Page link. Find it from the brand's website
+footer, by typing the brand into the Ad Library search and choosing the Page
+from the drop-down, or by search. A Page search returns only that advertiser's
+ads; a keyword or name search pulls in anyone who used the word (a musician, a
+hotel, a festival), so treat keywords as a supplement, not the main route.
 
 Confirm the list in one line before spending anything:
-"You sell X to Y in Z. I'll pull live ads from A, B and C, plus the keywords
-'p' and 'q', in country Z. Right?"
+"You sell X to Y in Z. I'll pull live ads from these N advertisers (D direct,
+S substitute, A adjacent...) plus the keywords 'p' and 'q', in country Z. Right?"
+
+If direct competitors run few or no ads, say so: an empty paid channel is a
+finding, not a failure.
+
+## Pull In Two Passes
+
+The long-running ads are the prize, and a big list costs money, so pull in two
+passes:
+
+1. **Survey.** 5 ads per advertiser across the whole list, to see who
+   advertises at all and who has long runners. 100 advertisers x 5 = 500 ads,
+   about $2.90 on Apify's free-plan rate.
+2. **Deep dive.** 25 to 50 ads per advertiser, only for those whose survey
+   showed ads running 60+ days or many versions of one idea. Put them in a
+   second `competitors.json`.
+
+Show the estimate for each pass and get a yes for each. A survey sample may not
+include an advertiser's oldest ads, which is what the deep dive is for.
 
 ## Get The Ads
 
@@ -27,14 +65,14 @@ Pick the first route that works.
    public Meta Ad Library through Apify's Facebook Ads Library scraper. Needs
    `APIFY_TOKEN`. Always run it once without `--confirm` and show the person the
    estimate (about $0.58 per 100 ads on the free plan, which includes $5 of
-   usage a month). Start only after they say yes. Default is 100 ads; more needs
-   their yes and `--allow-larger`. The owner's per-run ceiling is
+   usage a month). Start only after they say yes. Default is 100 ads in total; more needs
+   their yes and `--allow-larger`. `--per-search` sets ads per Page or keyword. The owner's per-run ceiling is
    `APIFY_MAX_USD` (default $5); never raise it for them.
 
    ```sh
    npm run research:ads -- --check
-   npm run research:ads -- --page https://www.facebook.com/<competitor> --keyword "<words a rival ad would use>" --country AU
-   npm run research:ads -- --page ... --keyword ... --country AU --confirm --out research/<brand>/items.json
+   npm run research:ads -- --competitors competitors.json --per-search 5
+   npm run research:ads -- --competitors competitors.json --per-search 5 --allow-larger --confirm --out research/<brand>/survey.json
    ```
 
 2. **An Ads Library MCP or another hosted provider**, if the runtime has one.
@@ -68,10 +106,11 @@ it by hand in the same JSON shape.
 ## Rank Them
 
 ```sh
-npm run research:board -- --items research/<brand>/items.json --out research/<brand>/<date>
+npm run research:board -- --items research/<brand>/survey.json --competitors competitors.json --out research/<brand>/<date>
 ```
 
-It keeps live ads, merges copies of one creative, ranks by days running and
+`--competitors` keeps only advertisers on the list (by name or alias) and
+counts the rest as set aside; `--drop "<name>"` removes one. It keeps live ads, merges copies of one creative, ranks by days running and
 writes `ad-board.html`, `ads.csv` and `board.json`. Pass the previous week's
 `board.json` with `--previous` to see which long runners have stopped.
 
@@ -84,6 +123,7 @@ writes `ad-board.html`, `ads.csv` and `board.json`. Pass the previous week's
 | Many versions of one idea | The concept works and they are scaling it |
 | New this week | What they are testing now: offers, angles, formats |
 | Gone (was 30+ days, now stopped) | Something changed: fatigue, offer, stock, season |
+| Dynamic | A catalog or dynamic ad: the Ad Library only stores a placeholder template such as `product.name`, so read its format and longevity, not its words |
 
 Always say: **a long run likely means profitable. That is an inference, not a
 fact.** Meta publishes no spend or results for ordinary commercial ads. A big
