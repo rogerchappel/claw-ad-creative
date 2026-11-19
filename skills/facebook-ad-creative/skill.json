@@ -53,6 +53,8 @@
           "FAL_KEY"
         ],
         "optionalEnv": [
+          "APIFY_TOKEN",
+          "APIFY_MAX_USD",
           "ADS_LIBRARY_API_KEY",
           "ADS_LIBRARY_PROVIDER",
           "META_ACCESS_TOKEN",
@@ -72,9 +74,11 @@
           "name": "facebook-ads-library",
           "role": "competitor-research",
           "env": [
+            "APIFY_TOKEN",
             "ADS_LIBRARY_API_KEY"
           ],
-          "required": false
+          "required": false,
+          "note": "Without an MCP server, npm run research:ads uses APIFY_TOKEN directly."
         },
         {
           "name": "higgsfield",
@@ -115,7 +119,7 @@
         "adsLibrarySecretRef": {
           "type": "object",
           "title": "Ads Library provider key",
-          "description": "Optional vault secret reference for a hosted Ads Library provider.",
+          "description": "Optional vault secret reference for the Ads Library provider. With the apify provider, expose it as APIFY_TOKEN.",
           "additionalProperties": false,
           "properties": {
             "name": {
@@ -184,6 +188,13 @@
           "type": "boolean",
           "title": "Allow budget changes",
           "default": false
+        },
+        "apifyMaxUsd": {
+          "type": "number",
+          "title": "Ad Library spend ceiling per run (USD)",
+          "description": "Exposed as APIFY_MAX_USD. research:ads refuses any run estimated above it.",
+          "default": 5,
+          "exclusiveMinimum": 0
         }
       },
       "required": [

@@ -29,7 +29,9 @@ config surface. The companion `skill.json` defines the UI schema.
 Expected vault-backed environment variables:
 
 - `FAL_KEY` for fal.ai asset generation,
-- `ADS_LIBRARY_API_KEY` for optional hosted Ads Library research,
+- `APIFY_TOKEN` for Ad Library research with `npm run research:ads`, and
+  `APIFY_MAX_USD` for the owner's per-run spend ceiling (default 5),
+- `ADS_LIBRARY_API_KEY` for another hosted Ads Library provider,
 - `META_ACCESS_TOKEN` and `META_AD_ACCOUNT_ID` for optional ad ops/reporting.
 
 Higgsfield's hosted MCP uses connector/account authentication; use
@@ -53,20 +55,31 @@ Default to:
 
 ## Workflow
 
-1. Clarify or infer the brief: product, audience, offer, market, conversion,
-   landing page, exclusions, and brand constraints.
-2. Research 10 to 30 active or recent ads. For research tactics, read
-   `references/research.md`.
-3. Extract patterns: hook, proof, offer, visual language, CTA, funnel stage, and
-   likely buyer psychology.
-4. Build 5 to 10 original concepts. For angle selection, read
-   `references/creative-strategy.md`.
-5. Prepare asset prompts and generation instructions. For model/tool guidance,
-   read `references/asset-generation.md`.
-6. Produce an approval pack before any ad-account action.
-7. If ad ops is requested, create only approved drafts or paused ads unless the
-   user explicitly approves publishing.
-8. If performance reporting is requested, read `references/reporting.md`.
+Each step has one job, one input and one output. Route every request to the
+step it needs, and ask first whether it is worth doing: a request with no data
+goes to research first; a request to scale with under 3 days of data stops.
+
+1. **Brief.** Read or draft `brand-brief.md` in the working folder. See
+   `references/brand-brief.md`. Unknowns are `[ASK]`; missing proof is
+   `[PROOF NEEDED]`.
+2. **Research.** Pull and rank competitors' live ads (`research:ads`, then
+   `research:board`), or capture them by hand. Show the cost estimate and get a
+   yes before any paid pull. Read `references/research.md`.
+3. **Angles.** Pick 3 angles for this round (who, problem, proof, offer).
+   Read `references/creative-strategy.md`.
+4. **Hooks and copy.** About 50 hooks per angle across six types, top 5
+   marked. Run `creative:overlap` against the research board.
+5. **Assets.** Static briefs and short video scripts, then render
+   (`creative:render`, `creative:package`) or generate with an approved spend
+   cap. Read `references/asset-generation.md`.
+6. **Pre-launch check.** PASS/FIX each ad against the checklist in
+   `references/creative-strategy.md` and `references/compliance.md`.
+7. **Approval pack.** Ad sets, names, copy, budget maths, dates, all marked
+   `NEEDS APPROVAL`.
+8. **Build paused.** Only on approval, create drafts or paused ads through the
+   Meta ads MCP server or `creative:upload`. The human activates.
+9. **Read results.** Day 1 delivery, day 3 cuts, day 7 scale, weekly report,
+   checked against the backend. Read `references/reporting.md`.
 
 ## App Install Campaigns
 
