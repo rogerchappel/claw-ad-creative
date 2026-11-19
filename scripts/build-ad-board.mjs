@@ -210,7 +210,7 @@ function page(list, stopped, summary) {
 <style>
 :root{--bg:#f4f4f2;--card:#fff;--ink:#17181a;--soft:#62656b;--line:#dcdcd8;--accent:#b4532a;--chip:#ececE8}
 @media (prefers-color-scheme:dark){:root{--bg:#141517;--card:#1e2023;--ink:#ecedef;--soft:#a2a5ab;--line:#33363a;--accent:#e8895f;--chip:#2a2c30}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,sans-serif}
+[hidden]{display:none!important}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,sans-serif}
 header,main,section{max-width:1320px;margin:auto;padding:16px}h1{margin:8px 0 4px}h2{margin:24px 0 8px}.note{color:var(--soft);max-width:760px}
 .stats{display:flex;flex-wrap:wrap;gap:24px;margin:12px 0}.stats b{display:block;font-size:24px}.stats span{color:var(--soft);font-size:13px}
 .bar{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}input{flex:1 1 220px;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
