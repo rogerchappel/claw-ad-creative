@@ -51,6 +51,7 @@ const allowed = new Set([
   'docs/README.md',
   'docs/app-install-setup.md',
   'docs/running-app-install-ads.md',
+  'docs/meta-ads-mcp-troubleshooting.md',
   'examples/meta-upload.config.example.json',
   'examples/competitors.example.json',
   'scripts/upload-to-meta.mjs',
