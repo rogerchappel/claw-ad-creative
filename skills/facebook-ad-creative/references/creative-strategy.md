@@ -20,6 +20,102 @@ Useful angle families:
 - deadline urgency,
 - cost of doing nothing.
 
+## Choosing This Round's Angles
+
+An angle is a reason one specific person buys now, not a product feature.
+"Has offline mode" is a feature; "the inspector who loses signal in the
+paddock" is an angle. Each angle needs four parts:
+
+- **Who:** one buyer in one situation.
+- **Problem:** their frustration, in their words (quote a customer).
+- **Proof:** only proof listed in the brand brief.
+- **Offer:** the reason to act today.
+
+Pick 3 angles per round, in this priority:
+
+1. an angle that already won for the brand, with a new twist,
+2. an angle competitors have kept running 60+ days that fits the brand's proof,
+3. one wild card the brand hasn't tried.
+
+Say which one you'd bet on and why, in two sentences.
+
+## Hooks
+
+The first line, or the first three seconds of video, does most of the work.
+Write many and test a few: about 50 per angle, mark the top 5 to test, 2 that
+suit a static headline and 3 that suit the first spoken line of a video.
+
+Spread them across types and tag each one:
+
+| Type | Shape |
+|---|---|
+| Question | Asks the thing the buyer is already wondering |
+| Confession | "I was wrong about..." |
+| Callout | Names the buyer or their situation directly |
+| Contrarian | Tells them to stop doing the usual thing, and why |
+| Result | A specific outcome. Only with proof in the brief |
+| POV | Drops the viewer into a familiar moment |
+
+Rules: under 12 words, sounds like a person talking to a friend, works with the
+sound off (it doubles as on-screen text), uses customer words. The three-second
+test: read it aloud; if nothing specific (a person, a problem or a surprise)
+has landed by "three", cut the warm-up ("So", "Hey guys", "I just wanted to").
+
+When hooks all sound alike, ask for 10 per type with no two starting with the
+same word, and feed in more real customer comments.
+
+## Static Formats That Keep Working
+
+| Format | Layout |
+|---|---|
+| Review | One real review, large, with stars and the product |
+| Us vs them | The product beside "the old way", with ticks and crosses |
+| Callout | The product with 3 or 4 labelled benefits pointing at it |
+| Bad news | Plain dark card: a blunt line about the old way, then the twist |
+| Before / after | Two states, the product between them. Real results only |
+| Best seller | A badge ("#1", "sold out 3 times") only if it's true |
+| Native post | Looks like a note, message, checklist or screenshot, not an ad |
+
+Each static brief: format, headline (8 words or fewer), supporting text (12 or
+fewer), the proof element, a one-line layout, primary text (under 125
+characters) and a headline field (under 40). Use the real product image as the
+reference every time; no other logos.
+
+## Short Video Structure
+
+Most short ads that work follow four beats in 8 to 15 seconds:
+
+| Time | Beat | Job |
+|---|---|---|
+| 0–3s | Hook | Stop the scroll. Product or screen visible by 0:03 |
+| 3–6s | Problem | Name the pain in the buyer's words |
+| 6–10s | Proof | Show it working |
+| 10–15s | Offer | One clear next step |
+
+Write each script as a table (time, beat, what we see, what they say, caption)
+plus a cast brief that matches the buyer. For SaaS and apps, screen recordings,
+founder stories, POV sketches and reply-to-comment videos usually beat
+generic UGC.
+
+Keep text, logos and app screens out of AI video renders: generate the human
+moment, then add real captions, the real packshot and a real screen recording
+in the edit.
+
+## Pre-Launch Check
+
+Score every finished ad PASS or FIX before it goes into a campaign:
+
+1. Hook on screen (and spoken, for video) in the first 3 seconds?
+2. Product or app visible by 0:03 and accurate (label, colour, UI)?
+3. Hook, problem, proof and offer all present?
+4. No garbled text, warped hands, odd faces or lip-sync drift?
+5. Every claim in the brand brief? (`compliance.md`)
+6. Copy passes `npm run creative:overlap` against the research board?
+7. Does the person on screen look like the buyer?
+8. Captions readable on a phone with the sound off?
+
+For each FIX, say exactly what to change: re-render, recut or new caption.
+
 ## Concept Template
 
 For each concept, define:
