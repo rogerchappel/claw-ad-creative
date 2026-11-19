@@ -19,6 +19,51 @@ Use the metrics that match the objective:
 - purchases/top-ups: ROAS, CPA, conversion value,
 - creative fatigue: frequency, CTR decline, CPM rise.
 
+## Read The Funnel In Order
+
+Diagnose from the top down, and change only the part that is failing:
+
+| Metric | Formula | If it's low |
+|---|---|---|
+| Hook rate | 3-second video plays ÷ impressions | Change the first 3 seconds only |
+| Hold rate | ThruPlays ÷ 3-second plays | Tighten the middle; show the product sooner |
+| CTR (link) | link clicks ÷ impressions | The offer or CTA is weak |
+| Cost per result / ROAS | spend ÷ results; revenue ÷ spend | Check the offer and landing page before the ad |
+
+Common starting bars are a hook rate of 25–30%, a hold rate of 10–15% and a
+link CTR around 1%. These are media-buyer rules of thumb, not Meta benchmarks,
+and vary by category, placement and price. After about four weeks, replace them
+with the account's own averages and compare against those.
+
+## Fixed Reads After Launch
+
+Read on a schedule, not whenever someone looks:
+
+- **Day 1: delivery only.** Is every ad spending? Any rejections? No verdicts;
+  early numbers swing.
+- **Day 3: cut clear losers.** Propose cutting ads that spent about 2x the
+  target cost per result with no result, or whose hook rate is far below the
+  ad set's average. Everything else keeps running.
+- **Day 7: scale clear winners.** Propose scaling ads under target cost with at
+  least 2x target cost in spend: move them to the scaling campaign or raise the
+  budget about 20% every 2 to 3 days, and brief 3 new hooks on the same body
+  before the winner fatigues.
+- **Weekly report.** What won, what lost, why, and next round's angles. Group
+  by the parts encoded in ad names (angle, format, hook type) so the account
+  learns which kinds of ad win, not just which ad.
+
+Every cut, scale or budget change is a proposal marked `NEEDS APPROVAL`. Don't
+judge with less than 3 days of data. For matrix tests, `npm run creative:score`
+does the pooled comparison.
+
+## Check Against The Backend
+
+Meta's numbers are what Meta attributes. Compare reported conversions with the
+source of truth for the same dates: store orders, app store or MMP installs,
+CRM signups, billing. Flag a large or sudden gap and check the pixel,
+Conversions API, SDK events and UTMs before trusting either number. Never scale
+an ad Meta likes but the backend doesn't.
+
 ## Report Shape
 
 Lead with:
