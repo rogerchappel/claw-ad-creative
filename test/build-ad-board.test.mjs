@@ -110,3 +110,19 @@ test('keeps only listed competitors and drops named advertisers', async () => {
   assert.deepEqual(board.summary.offListAdvertisers, ['Brand C', 'Some Band']);
   assert.match(result.stdout, /2 from 2 advertisers not on the list/);
 });
+
+test('reports searches with no live ads and failed searches apart from ads', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'claw-board-empty-'));
+  roots.push(root);
+  const list = path.join(root, 'competitors.json');
+  await writeFile(list, JSON.stringify({ competitors: [{ name: 'Brand A', page: 'https://www.facebook.com/a' }, { name: 'Quiet Co', page: 'https://www.facebook.com/quiet' }] }));
+  const items = [apify('1', 50), { inputUrl: 'https://www.facebook.com/quiet', results: [], totalCount: 0 }, { url: 'https://www.facebook.com/private', error: 'x', errorDescription: 'Empty or private data' }];
+  const { result, out } = await build(items, ['--competitors', list]);
+  assert.equal(result.status, 0, result.stderr);
+  const board = JSON.parse(await readFile(path.join(out, 'board.json'), 'utf8'));
+  assert.deepEqual(board.summary.noLiveAds, ['Quiet Co']);
+  assert.deepEqual(board.summary.failedSearches, [{ search: 'https://www.facebook.com/private', reason: 'Empty or private data' }]);
+  assert.equal(board.summary.undated, 0);
+  assert.match(result.stdout, /1 searches found no live ads: Quiet Co/);
+  assert.match(await readFile(path.join(out, 'ad-board.html'), 'utf8'), /Searched, no live ads/);
+});
