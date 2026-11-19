@@ -1,0 +1,30 @@
+{
+  "country": "AU",
+  "keywords": ["site inspection app", "field notes app"],
+  "competitors": [
+    {
+      "name": "Fieldbook Rival",
+      "aliases": ["Fieldbook Rival Pty Ltd"],
+      "page": "https://www.facebook.com/fieldbookrival",
+      "tier": "direct",
+      "why": "Same buyer, same job: inspection notes on a phone"
+    },
+    {
+      "name": "Generic Forms App",
+      "page": "https://www.facebook.com/genericformsapp",
+      "tier": "substitute",
+      "why": "What crews use today instead of a purpose-built app"
+    },
+    {
+      "name": "Trade Expo",
+      "page": "https://www.facebook.com/tradeexpo",
+      "tier": "platform",
+      "why": "Event the buyer already attends and trusts"
+    },
+    {
+      "name": "Brand Without A Page Yet",
+      "tier": "adjacent",
+      "why": "Listed so the agent finds the Page before pulling"
+    }
+  ]
+}
