@@ -16,8 +16,9 @@ import { parseArgs } from 'node:util';
 const LONG_RUN_DAYS = 90;
 const PAST_TESTING_DAYS = 30;
 const NEW_DAYS = 7;
+const TEMPLATE = /\{\{[^}]*\}\}/;
 const LIBRARY = 'https://www.facebook.com/ads/library/';
-const CSV_COLUMNS = ['rank', 'days_running', 'signal', 'advertiser', 'format', 'variations', 'headline', 'copy', 'cta', 'landing_page', 'image', 'video', 'started', 'library_link', 'id'];
+const CSV_COLUMNS = ['rank', 'days_running', 'signal', 'advertiser', 'format', 'dynamic', 'variations', 'headline', 'copy', 'cta', 'landing_page', 'image', 'video', 'started', 'library_link', 'id'];
 
 let options;
 try {
@@ -26,6 +27,8 @@ try {
       items: { type: 'string' },
       out: { type: 'string' },
       previous: { type: 'string' },
+      competitors: { type: 'string' },
+      drop: { type: 'string', multiple: true },
       today: { type: 'string' },
       help: { type: 'boolean', short: 'h', default: false }
     }
@@ -35,10 +38,14 @@ try {
 }
 if (options.help) {
   console.log(`Usage:
-  build-ad-board.mjs --items items.json --out <folder> [--previous <folder>/board.json] [--today YYYY-MM-DD]
+  build-ad-board.mjs --items items.json --out <folder> [--competitors competitors.json] [--drop <advertiser>]
+                    [--previous <folder>/board.json] [--today YYYY-MM-DD]
 
-Writes ad-board.html, ads.csv and board.json. --previous marks long runners from an
-earlier board that have since stopped (signal "gone").`);
+Writes ad-board.html, ads.csv and board.json.
+  --competitors   keep only advertisers named in this list (name or aliases); the rest
+                  are counted and set aside. Keyword searches pull in unrelated advertisers.
+  --drop          set aside one advertiser by name (repeatable)
+  --previous      mark long runners from an earlier board that have since stopped ("gone")`);
   process.exit(0);
 }
 if (!options.items || !options.out) fail('--items and --out are required');
@@ -51,7 +58,11 @@ if (!Array.isArray(raw)) fail('--items must be a JSON array');
 const normalized = raw.filter((item) => item && typeof item === 'object').map(normalize);
 const undated = normalized.filter((ad) => !ad).length;
 const ended = normalized.filter((ad) => ad && !ad.active).length;
-const live = normalized.filter((ad) => ad?.active);
+const keep = options.competitors ? competitorNames(readJson(options.competitors, '--competitors')) : null;
+const dropped = new Set((options.drop ?? []).map(nameKey));
+const onList = (ad) => !dropped.has(nameKey(ad.advertiser)) && (!keep || keep.has(nameKey(ad.advertiser)));
+const offList = normalized.filter((ad) => ad?.active && !onList(ad));
+const live = normalized.filter((ad) => ad?.active && onList(ad));
 const ads = rank(dedupe(live));
 
 const gone = [];
@@ -64,12 +75,12 @@ if (options.previous) {
 }
 
 mkdirSync(options.out, { recursive: true });
-const summary = { built: isoDate(today), live: ads.length, advertisers: new Set(ads.map((ad) => ad.advertiser)).size, longRunning: ads.filter((ad) => ad.signal === 'long-running').length, ended, undated, mergedCopies: live.length - ads.length, gone: gone.length };
+const summary = { built: isoDate(today), live: ads.length, advertisers: new Set(ads.map((ad) => ad.advertiser)).size, longRunning: ads.filter((ad) => ad.signal === 'long-running').length, dynamic: ads.filter((ad) => ad.dynamic).length, ended, undated, offList: offList.length, offListAdvertisers: [...new Set(offList.map((ad) => ad.advertiser))].sort(), mergedCopies: live.length - ads.length, gone: gone.length };
 writeFileSync(path.join(options.out, 'board.json'), `${JSON.stringify({ summary, note: inferenceNote(), ads, gone }, null, 1)}\n`);
 writeFileSync(path.join(options.out, 'ads.csv'), `﻿${[CSV_COLUMNS, ...ads.map((ad) => CSV_COLUMNS.map((key) => ad[key]))].map((row) => row.map(csvCell).join(',')).join('\r\n')}\r\n`);
 writeFileSync(path.join(options.out, 'ad-board.html'), page(ads, gone, summary));
 
-console.log(`${raw.length} ads in. Set aside ${ended} that have ended and ${undated} with no start date. Merged ${summary.mergedCopies} copies. ${ads.length} live ads from ${summary.advertisers} advertisers on the board.`);
+console.log(`${raw.length} ads in. Set aside ${ended} that have ended, ${undated} with no start date and ${offList.length} from ${summary.offListAdvertisers.length} advertisers not on the list. Merged ${summary.mergedCopies} copies. ${ads.length} live ads from ${summary.advertisers} advertisers on the board.`);
 if (ads.length) console.log(`Longest run: ${ads[0].days_running} days (${ads[0].advertiser}).`);
 if (gone.length) console.log(`${gone.length} ads from the previous board have stopped.`);
 console.log(`Wrote ${path.join(options.out, 'ad-board.html')}, ads.csv and board.json.`);
@@ -86,6 +97,8 @@ function normalize(item) {
   const advertiser = String((hand ? item.advertiser : item.pageName ?? snap.pageName) ?? 'Unknown');
   const id = String((hand ? item.library_id : item.adArchiveID ?? item.adArchiveId) ?? '').trim() || `hand-${hashText(`${advertiser}|${headline}|${copy}`)}`;
   if (!started) return null;
+  // Catalog and dynamic ads store placeholders; Meta fills in the real text per viewer.
+  const dynamic = TEMPLATE.test(`${headline} ${copy}`);
   const images = hand ? [{ url: item.image }] : [...(snap.images ?? []), ...cards, ...(snap.videos ?? [])].map((x) => ({ url: x?.resizedImageUrl ?? x?.originalImageUrl ?? x?.videoPreviewImageUrl }));
   const videos = hand ? [{ url: item.video }] : [...(snap.videos ?? []), ...cards].map((x) => ({ url: x?.videoHdUrl ?? x?.videoSdUrl }));
   return {
@@ -95,6 +108,7 @@ function normalize(item) {
     started: isoDate(started),
     days_running: Math.max(0, Math.round((today - started) / 86_400_000)),
     format: formatName(hand ? item.format : snap.displayFormat, cards.length),
+    dynamic,
     headline,
     copy,
     cta: String(hand ? item.cta ?? '' : snap.ctaText ?? card.ctaText ?? '').trim(),
@@ -113,7 +127,8 @@ function dedupe(list) {
   const owners = new Map();
   const kept = [];
   for (const ad of [...list].sort((a, b) => b.days_running - a.days_running)) {
-    const words = `${ad.headline} ${ad.copy}`.toLowerCase().replace(/\W+/g, ' ').trim();
+    // Template text is the same across an advertiser's dynamic ads, so it can't identify a creative.
+    const words = ad.dynamic ? '' : `${ad.headline} ${ad.copy}`.toLowerCase().replace(/\W+/g, ' ').trim();
     const keys = [`id:${ad.id}`, ad.group && `group:${ad.group}`, words && `words:${ad.advertiser.toLowerCase()}|${words}`].filter(Boolean);
     const owner = keys.map((key) => owners.get(key)).find(Boolean);
     if (owner) {
@@ -138,6 +153,18 @@ function signal(ad) {
   if (ad.days_running >= PAST_TESTING_DAYS) return 'past-testing';
   if (ad.days_running <= NEW_DAYS) return 'new-this-week';
   return 'testing';
+}
+
+function nameKey(name) {
+  return String(name ?? '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+
+function competitorNames(data) {
+  const list = Array.isArray(data) ? data : data?.competitors;
+  if (!Array.isArray(list)) fail('--competitors must be a list, or an object with a "competitors" list');
+  const names = new Set(list.flatMap((entry) => (typeof entry === 'string' ? [entry] : [entry?.name, ...(entry?.aliases ?? [])])).filter(Boolean).map(nameKey));
+  if (!names.size) fail('--competitors has no names');
+  return names;
 }
 
 function formatName(raw, cardCount) {
@@ -199,7 +226,7 @@ function card(ad) {
 <div class="thumb">${ad.image ? `<img loading="lazy" referrerpolicy="no-referrer" src="${esc(ad.image)}" alt="">` : 'No image'}<span class="fmt">${esc(ad.format)}</span></div>
 <div class="body"><div class="top"><b class="days">${ad.days_running}<small> days</small></b><span>#${ad.rank ?? '–'}</span></div>
 <div class="sig ${esc(ad.signal)}">${esc(ad.signal.replace(/-/g, ' '))}${ad.variations > 1 ? ` · ${ad.variations} versions` : ''}</div>
-<div class="who">${esc(ad.advertiser)}</div>${ad.headline ? `<div class="head">${esc(ad.headline)}</div>` : ''}<p class="copy">${esc(ad.copy)}</p>
+<div class="who">${esc(ad.advertiser)}</div>${ad.dynamic ? '<p class="copy dyn">Dynamic ad: the text and image vary per viewer, so the Ad Library only stores a template.</p>' : `${ad.headline ? `<div class="head">${esc(ad.headline)}</div>` : ''}<p class="copy">${esc(ad.copy)}</p>`}
 <div class="meta">${ad.cta ? `<b>${esc(ad.cta)}</b>` : ''}${links}</div></div></article>`;
 }
 
@@ -220,10 +247,10 @@ header,main,section{max-width:1320px;margin:auto;padding:16px}h1{margin:8px 0 4p
 .fmt{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.72);color:#fff;font-size:12px;padding:3px 8px;border-radius:6px}
 .body{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1}.top{display:flex;justify-content:space-between;color:var(--soft)}.days{font-size:22px;color:var(--ink)}.days small{font-size:12px;font-weight:400;color:var(--soft)}
 .sig{font-size:12px;color:var(--soft);text-transform:capitalize}.sig.long-running{color:var(--accent);font-weight:600}.who,.head{font-weight:600;overflow-wrap:anywhere}
-.copy{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:9.5em;overflow:auto}.meta{margin-top:auto;padding-top:8px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px}a{color:var(--accent)}
+.dyn{color:var(--soft);font-style:italic}.copy{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:9.5em;overflow:auto}.meta{margin-top:auto;padding-top:8px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px}a{color:var(--accent)}
 </style></head><body>
 <header><h1>Ad Board</h1><p class="note">${esc(inferenceNote())} Image and video links expire; save anything worth keeping.</p>
-<div class="stats"><div><b>${summary.live}</b><span>Live ads</span></div><div><b>${summary.advertisers}</b><span>Advertisers</span></div><div><b>${summary.longRunning}</b><span>${LONG_RUN_DAYS}+ days</span></div><div><b>${list[0]?.days_running ?? 0}</b><span>Longest run</span></div><div><b>${summary.gone}</b><span>Stopped since last board</span></div></div>
+<div class="stats"><div><b>${summary.live}</b><span>Live ads</span></div><div><b>${summary.advertisers}</b><span>Advertisers</span></div><div><b>${summary.longRunning}</b><span>${LONG_RUN_DAYS}+ days</span></div><div><b>${list[0]?.days_running ?? 0}</b><span>Longest run</span></div><div><b>${summary.gone}</b><span>Stopped since last board</span></div><div><b>${summary.offList}</b><span>Ads set aside (not competitors)</span></div></div>
 <div class="bar"><input type="search" id="q" placeholder="Search the copy" aria-label="Search the copy"></div>
 <div class="bar" id="sig">${chip('', 'All signals', true)}${['long-running', 'past-testing', 'testing', 'new-this-week'].map((s) => chip(s, s.replace(/-/g, ' '), false)).join('')}</div>
 <div class="bar" id="who">${chip('', 'All advertisers', true)}${advertisers.map((a) => chip(a, a, false)).join('')}</div></header>
