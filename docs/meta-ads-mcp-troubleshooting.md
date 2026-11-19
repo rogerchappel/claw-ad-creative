@@ -40,6 +40,12 @@ goes. Opening the ad, scrolling and clicking around does not clear it; only a
 change does. Adding the 9:16 and 1:1 images per placement counts as a real
 change, and you need to do that anyway (see below), so do both at once.
 
+**Check the headline and description after the edit.** On most ads, the save
+that cleared the error also dropped the headline and description the agent had
+set: only the primary text, image, link and button were left. Re-enter them
+before you save, then ask the agent to read the drafts back and confirm every
+ad still has a headline.
+
 Edit each ad on its own. With several ads selected, Ads Manager showed "Your
 selection has multiple apps that can't be edited together" and the app store
 as "Unknown", so a bulk edit is not a reliable way to clear the error.
