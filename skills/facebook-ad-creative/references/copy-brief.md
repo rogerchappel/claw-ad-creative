@@ -108,6 +108,45 @@ to. Two rules:
 4. Run `npm run creative:overlap` against the research board, then the
    pre-launch check in `creative-strategy.md` and `compliance.md`.
 
+## Long Primary Text
+
+Long primary text is where the full brief fits, and on Facebook it often reads
+as a post rather than an ad, which earns comments and shares. Write a long
+version for every concept, and test it rather than assume (see
+`reporting.md`).
+
+**Shape.** 120 to 250 words, in short paragraphs of one to three sentences,
+following the brief's order:
+
+1. The hook, repeating or extending the image's headline.
+2. A scene the buyer recognises, with concrete detail from customer words.
+3. The cause they suspect, then the real cause.
+4. Why the usual fixes don't solve it (name the alternatives, fairly).
+5. What the product does, as two or three things it lets them do, not a
+   feature list.
+6. The risk comparison and a small first step ("try it on your next ten").
+7. Optional: one line of real proof.
+
+**Rules.**
+
+- **The first 125 characters** show before "See more". They must hold the hook
+  and the start of the scene on their own, with no greeting or brand name
+  first.
+- Write like a person posting, in the first or second person. No headings and
+  no bullet lists of features; short paragraphs do the work arrows do in short
+  copy.
+- No emojis unless the brand's own posts use them, and never as bullet points.
+- Every claim in the long version is checked like the short one; long copy
+  makes it easy to slip in a feature that doesn't exist.
+- One call to action, at the end. The button does the rest.
+- Run `creative:overlap` on the long versions too.
+
+**In the tools.** Render jobs take a `primaryTextLong` for each creative or
+hook, `creative:package` puts it in `copy.txt`, and `creative:upload` uses it
+when the upload config sets `"copy": "long"`. To test short against long, give
+the long version its own ad set (see `reporting.md`) instead of switching the
+whole campaign.
+
 ## Size The Bets
 
 Each new, unproven choice in an ad is a bet. Reuse what is already proven
