@@ -62,6 +62,7 @@ const allowed = new Set([
   'skills/facebook-ad-creative/references/app-install-campaigns.md',
   'skills/facebook-ad-creative/references/brand-brief.md',
   'skills/facebook-ad-creative/references/compliance.md',
+  'skills/facebook-ad-creative/references/copy-brief.md',
   'docs/report-template.md',
   'docs/TASKS.md',
   'examples/render-job.example.json',

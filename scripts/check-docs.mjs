@@ -23,7 +23,8 @@ const required = [
   'skills/facebook-ad-creative/references/asset-generation.md',
   'skills/facebook-ad-creative/references/reporting.md',
   'skills/facebook-ad-creative/references/brand-brief.md',
-  'skills/facebook-ad-creative/references/compliance.md'
+  'skills/facebook-ad-creative/references/compliance.md',
+  'skills/facebook-ad-creative/references/copy-brief.md'
 ];
 
 const failures = [];
