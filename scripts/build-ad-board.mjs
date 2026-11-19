@@ -55,10 +55,20 @@ if (!today) fail('--today must look like 2026-11-04');
 
 const raw = readJson(options.items, '--items');
 if (!Array.isArray(raw)) fail('--items must be a JSON array');
-const normalized = raw.filter((item) => item && typeof item === 'object').map(normalize);
+// Apify adds one record per search that found nothing ({ inputUrl, results: [], totalCount: 0 })
+// or failed ({ url, error }). They are findings about the search, not ads.
+const records = raw.filter((item) => item && typeof item === 'object');
+const isEmptySearch = (item) => 'totalCount' in item && Array.isArray(item.results) && !item.results.length;
+const isFailedSearch = (item) => 'error' in item && !('snapshot' in item);
+const list = options.competitors ? readJson(options.competitors, '--competitors') : null;
+const pageNames = new Map((Array.isArray(list) ? list : list?.competitors ?? []).filter((entry) => entry?.page).map((entry) => [entry.page.replace(/\/$/, ''), entry.name]));
+const searchName = (url) => pageNames.get(String(url ?? '').replace(/\/$/, '')) ?? String(url ?? 'unknown search');
+const noAds = records.filter(isEmptySearch).map((item) => searchName(item.inputUrl));
+const failed = records.filter(isFailedSearch).map((item) => ({ search: searchName(item.url), reason: String(item.errorDescription ?? item.error) }));
+const normalized = records.filter((item) => !isEmptySearch(item) && !isFailedSearch(item)).map(normalize);
 const undated = normalized.filter((ad) => !ad).length;
 const ended = normalized.filter((ad) => ad && !ad.active).length;
-const keep = options.competitors ? competitorNames(readJson(options.competitors, '--competitors')) : null;
+const keep = list ? competitorNames(list) : null;
 const dropped = new Set((options.drop ?? []).map(nameKey));
 const onList = (ad) => !dropped.has(nameKey(ad.advertiser)) && (!keep || keep.has(nameKey(ad.advertiser)));
 const offList = normalized.filter((ad) => ad?.active && !onList(ad));
@@ -75,13 +85,15 @@ if (options.previous) {
 }
 
 mkdirSync(options.out, { recursive: true });
-const summary = { built: isoDate(today), live: ads.length, advertisers: new Set(ads.map((ad) => ad.advertiser)).size, longRunning: ads.filter((ad) => ad.signal === 'long-running').length, dynamic: ads.filter((ad) => ad.dynamic).length, ended, undated, offList: offList.length, offListAdvertisers: [...new Set(offList.map((ad) => ad.advertiser))].sort(), mergedCopies: live.length - ads.length, gone: gone.length };
+const summary = { built: isoDate(today), live: ads.length, advertisers: new Set(ads.map((ad) => ad.advertiser)).size, longRunning: ads.filter((ad) => ad.signal === 'long-running').length, dynamic: ads.filter((ad) => ad.dynamic).length, ended, undated, offList: offList.length, offListAdvertisers: [...new Set(offList.map((ad) => ad.advertiser))].sort(), noLiveAds: noAds, failedSearches: failed, mergedCopies: live.length - ads.length, gone: gone.length };
 writeFileSync(path.join(options.out, 'board.json'), `${JSON.stringify({ summary, note: inferenceNote(), ads, gone }, null, 1)}\n`);
 writeFileSync(path.join(options.out, 'ads.csv'), `﻿${[CSV_COLUMNS, ...ads.map((ad) => CSV_COLUMNS.map((key) => ad[key]))].map((row) => row.map(csvCell).join(',')).join('\r\n')}\r\n`);
 writeFileSync(path.join(options.out, 'ad-board.html'), page(ads, gone, summary));
 
 console.log(`${raw.length} ads in. Set aside ${ended} that have ended, ${undated} with no start date and ${offList.length} from ${summary.offListAdvertisers.length} advertisers not on the list. Merged ${summary.mergedCopies} copies. ${ads.length} live ads from ${summary.advertisers} advertisers on the board.`);
 if (ads.length) console.log(`Longest run: ${ads[0].days_running} days (${ads[0].advertiser}).`);
+if (noAds.length) console.log(`${noAds.length} searches found no live ads: ${noAds.join(', ')}.`);
+if (failed.length) console.log(`${failed.length} searches failed: ${failed.map((f) => `${f.search} (${f.reason})`).join('; ')}.`);
 if (gone.length) console.log(`${gone.length} ads from the previous board have stopped.`);
 console.log(`Wrote ${path.join(options.out, 'ad-board.html')}, ads.csv and board.json.`);
 if (!ads.length) process.exitCode = 1;
@@ -255,6 +267,7 @@ header,main,section{max-width:1320px;margin:auto;padding:16px}h1{margin:8px 0 4p
 <div class="bar" id="sig">${chip('', 'All signals', true)}${['long-running', 'past-testing', 'testing', 'new-this-week'].map((s) => chip(s, s.replace(/-/g, ' '), false)).join('')}</div>
 <div class="bar" id="who">${chip('', 'All advertisers', true)}${advertisers.map((a) => chip(a, a, false)).join('')}</div></header>
 <main class="grid" id="grid">${list.map(card).join('')}</main>
+${summary.noLiveAds.length || summary.failedSearches.length ? `<section><h2>Searched, no live ads</h2><p class="note">${esc(summary.noLiveAds.join(', ') || 'None')}</p>${summary.failedSearches.length ? `<p class="note">Failed: ${esc(summary.failedSearches.map((f) => `${f.search} (${f.reason})`).join('; '))}</p>` : ''}</section>` : ''}
 ${stopped.length ? `<section><h2>Stopped since the last board</h2><p class="note">These ran ${PAST_TESTING_DAYS}+ days and are no longer live. Something changed: fatigue, a new offer, stock, or a season ending.</p><div class="grid">${stopped.map(card).join('')}</div></section>` : ''}
 <script>
 (()=>{const q=document.getElementById('q'),cards=[...document.querySelectorAll('#grid article')];let s='',w='';
