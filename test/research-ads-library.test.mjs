@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -94,4 +94,33 @@ test('check proves the token without starting a run', async () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Account: tester/);
   assert.deepEqual(requests.map((r) => r.url), ['/v2/users/me']);
+});
+
+test('reads pages, keywords and country from a competitor list', async () => {
+  const { requests, base } = await fakeApify();
+  const root = await mkdtemp(path.join(tmpdir(), 'claw-research-list-'));
+  cleanups.push(() => rm(root, { recursive: true, force: true }));
+  const list = path.join(root, 'competitors.json');
+  await writeFile(list, JSON.stringify({ country: 'NZ', keywords: ['garden tools'], competitors: [{ name: 'A', page: 'https://www.facebook.com/a' }, { name: 'B', page: 'https://www.facebook.com/b' }, { name: 'No Page Co' }] }));
+  const preview = await run(['--competitors', list, '--per-search', '10']);
+  assert.equal(preview.status, 0, preview.stderr);
+  assert.match(preview.stdout, /Skipped 1 competitors with no Facebook Page link: No Page Co/);
+  assert.match(preview.stdout, /Searches: 3, up to 10 ads each, 30 in total/);
+  const result = await run(['--competitors', list, '--per-search', '10', '--confirm', '--out', path.join(root, 'items.json')], { APIFY_TOKEN: 't', APIFY_BASE_URL: base });
+  assert.equal(result.status, 0, result.stderr);
+  const urls = requests[0].body.startUrls.map((entry) => entry.url);
+  assert.ok(urls.some((url) => url.includes('country=NZ') && url.includes('q=garden+tools')));
+  assert.ok(urls.includes('https://www.facebook.com/a'));
+  assert.equal(requests[0].body.resultsLimit, 10);
+});
+
+test('per-search over 100 ads in total still needs the person\'s yes', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'claw-research-large-'));
+  cleanups.push(() => rm(root, { recursive: true, force: true }));
+  const list = path.join(root, 'competitors.json');
+  await writeFile(list, JSON.stringify({ competitors: Array.from({ length: 30 }, (_, i) => ({ name: `C${i}`, page: `https://www.facebook.com/c${i}` })) }));
+  const result = await run(['--competitors', list, '--per-search', '10']);
+  assert.equal(result.status, 4);
+  assert.match(result.stdout, /300 in total/);
+  assert.match(result.stdout, /--allow-larger/);
 });
