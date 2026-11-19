@@ -67,8 +67,11 @@ goes to research first; a request to scale with under 3 days of data stops.
    yes before any paid pull. Read `references/research.md`.
 3. **Angles.** Pick 3 angles for this round (who, problem, proof, offer).
    Read `references/creative-strategy.md`.
-4. **Hooks and copy.** About 50 hooks per angle across six types, top 5
-   marked. Run `creative:overlap` against the research board.
+4. **Hooks and copy.** For cold audiences, fill the 17-question copy brief
+   first and size each concept's bets; read `references/copy-brief.md`. Then
+   about 50 hooks per angle across six types, top 5 marked, and write from a
+   long-running reference ad's structure. Run `creative:overlap` against the
+   research board.
 5. **Assets.** Static briefs and short video scripts, then render
    (`creative:render`, `creative:package`) or generate with an approved spend
    cap. Read `references/asset-generation.md`.
