@@ -23,8 +23,8 @@ Useful angle families:
 ## Choosing This Round's Angles
 
 An angle is a reason one specific person buys now, not a product feature.
-"Has offline mode" is a feature; "the inspector who loses signal in the
-paddock" is an angle. Each angle needs four parts:
+"Has offline mode" is a feature; "the site inspector who loses signal on a
+rural job" is an angle. Each angle needs four parts:
 
 - **Who:** one buyer in one situation.
 - **Problem:** their frustration, in their words (quote a customer).
