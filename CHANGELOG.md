@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added a cold-traffic copy brief to the skill: four jobs before the product,
+  17 questions to answer before writing, market to segment to buyer targeting,
+  writing from a reference ad's structure, and bet sizing per concept. Added
+  matching limits on mechanism claims, fear, urgency and people on screen.
 - Added `research:ads` to pull live competitor ads from the public Meta Ad
   Library through Apify, behind a cost estimate, a per-run cap and an
   owner-set ceiling.
