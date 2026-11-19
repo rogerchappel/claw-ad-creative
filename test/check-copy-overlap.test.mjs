@@ -50,3 +50,10 @@ test('rejects a phrase length under three words', async () => {
   const result = await check({ 'ours.txt': 'x', 'board.json': board }, ['--words', '2']);
   assert.equal(result.status, 1);
 });
+
+test('ignores dynamic ad placeholders', async () => {
+  const items = JSON.stringify([{ pageName: 'Rival Co', snapshot: { title: '{{product.name}}', body: { text: '{{product.brand}} {{product.name}} {{product.price}} {{product.url}} {{product.description}}' } } }]);
+  const result = await check({ 'ours.txt': 'Product name product brand product price product url.', 'items.json': items });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /no competitor ad text/);
+});

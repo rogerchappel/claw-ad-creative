@@ -119,7 +119,9 @@ function loadTheirs(file) {
     const snap = ad.snapshot ?? {};
     const body = typeof snap.body === 'object' ? snap.body?.text : snap.body;
     const cards = (snap.cards ?? []).map((c) => `${c.title ?? ''}\n${c.body ?? ''}`).join('\n');
-    return { advertiser: ad.advertiser ?? ad.pageName ?? snap.pageName ?? 'unknown', text: [ad.headline, ad.copy, snap.title, body, cards].filter(Boolean).join('\n') };
+    // Dynamic ads only store {{placeholders}}; they carry no competitor wording to compare.
+    const text = [ad.headline, ad.copy, snap.title, body, cards].filter(Boolean).join('\n').replace(/\{\{[^}]*\}\}/g, ' ');
+    return { advertiser: ad.advertiser ?? ad.pageName ?? snap.pageName ?? 'unknown', text };
   }).filter((ad) => ad.text.trim());
 }
 
