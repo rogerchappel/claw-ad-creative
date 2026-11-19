@@ -75,10 +75,10 @@ Ask the agent to build the same structure with `ads_create_campaign`,
 `ads_get_field_context` first to learn the accepted fields, because Meta's docs
 don't publish the tool parameters.
 
-The agent can set every ad's copy and all three image sizes. A human still has
-three jobs: upload the images into the ad account's image library through Ads
-Manager, save one real change on each ad set (this clears error #1885183; don't
-edit the ads themselves), and publish. Then the agent runs
+The agent can set every ad's copy and all three image sizes, and clear error
+#1885183 by updating each ad set. A human still uploads the images into the ad
+account's image library through Ads Manager, keeps the ads closed in Ads
+Manager while the agent works, and publishes. Then the agent runs
 `scripts/check-meta-drafts.mjs` to confirm nothing was lost. See
 [Meta Ads MCP: What Can Go Wrong](meta-ads-mcp-troubleshooting.md) for the
 error, the upload route and the other gaps.

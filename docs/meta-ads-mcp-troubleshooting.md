@@ -8,9 +8,9 @@ you plan around it.
 ## The short version
 
 The agent can build everything, including each ad's headline, description and
-all three image sizes. A human then has two small jobs in Ads Manager: upload
-the images, and save one change on each **ad set** to clear an error the MCP
-server leaves on every ad. Don't edit the ads themselves.
+all three image sizes, and clear the error the MCP server leaves on every ad.
+The human uploads the images, reviews and publishes. Nobody edits the ads in
+Ads Manager.
 
 1. The agent checks the ad account, Page and Instagram account. If the brand's
    Instagram account isn't linked to the ad account, link it first (see
@@ -21,9 +21,10 @@ server leaves on every ad. Don't edit the ads themselves.
 4. The agent creates each ad with the primary text, headline, description, App
    Store link, Install button and a different image per placement (see "The
    creative that survives").
-5. A human reloads Ads Manager (Cmd+Shift+R), opens each **ad set**, makes one
-   real change and saves. This clears error #1885183 on every ad in that ad set
-   and leaves the ads untouched.
+5. The agent updates each **ad set** (see "What clears it"). This clears error
+   #1885183 on every ad in that ad set and leaves the ads untouched. Close any
+   ad that's open in Ads Manager first: an open editor autosaves over the
+   agent's changes.
 6. The agent reads the drafts back and runs `scripts/check-meta-drafts.mjs`
    against the manifest. Every ad should pass.
 7. A human reviews and publishes.
@@ -44,14 +45,18 @@ through. The same error came back for an ad that linked to a website with no app
 attached, so switching your own Meta app to Live does not clear it. (Set your app
 to Live anyway if you run app install ads; it's needed for other reasons.)
 
-**What clears it: one real change on the ad set.** Open the ad set (not the ad)
-in Ads Manager, change something and save. Meta re-checks every ad in that ad
-set and the error goes, without touching the ads' text or images. In Australia,
-completing the "Review requirements" task under Audience was the change; any
-real edit to the ad set should do. Looking at it, scrolling or clicking around
-does not count.
+**What clears it: an update to the ad set, after the last creative change.**
+When the ad set changes, Meta re-checks every ad in it and the error goes,
+without touching the ads' text or images. The agent can do this itself with
+`ads_update_entity` on the ad set. For ad sets targeting Australia, setting
+`{"regional_regulated_categories":["AUSTRALIA_UNIVERSAL"]}` worked, and it is a
+change those ad sets need anyway (Ads Manager shows it as "There is 1 additional
+task to review"). Sending the same value again also worked. A human can do the
+same in Ads Manager by saving a real change on the ad set; looking at it,
+scrolling or clicking around does not count. The cleared ads show
+`NEEDS_VALIDATION` with no `active_errors` until they're published.
 
-**Don't fix it by editing the ad.** Saving a change on the ad also clears the
+**Don't fix it by editing the ad in Ads Manager.** Saving a change on the ad also clears the
 error, but Ads Manager rewrites the creative as a plain single-image ad: the
 headline, the description and every image except the first are dropped. That
 includes quick tricks such as switching the ad's format to carousel and back to
@@ -139,6 +144,13 @@ Settings → Instagram accounts), check it appears in `ads_get_ig_accounts`, and
 pass its ID as `instagram_user_id` in `object_story_spec`. The MCP server cannot
 choose "use the Facebook Page" for Instagram; that is only offered in Ads
 Manager on the ad itself, and editing the ad drops the headline (see above).
+
+## Ads Manager overwrites the agent's changes
+
+An ad left open in the Ads Manager editor autosaves. After the agent re-sent an
+ad's creative, the open editor saved its own older copy over it, and the
+headline and extra images were gone again. Close every ad in Ads Manager before
+the agent changes creatives, and reload before looking at them again.
 
 ## Ads made by the agent don't show in Ads Manager
 

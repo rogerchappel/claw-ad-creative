@@ -77,9 +77,12 @@ frequent. Value optimisation through the API is allow-list only.
         primary text, headline and description from the manifest. Don't use
         `ads_create_creative`; it fails with error #1885183.
      5. Preview each ad with `ads_get_ad_preview`.
-     6. Ask the human to reload Ads Manager, then make and save one real change
-        on each **ad set**. That clears #1885183. Tell them not to edit the ads:
-        an ad-level save drops the headline, description and extra images.
+     6. After the last creative change, update each **ad set** with
+        `ads_update_entity` (for Australia,
+        `{"regional_regulated_categories":["AUSTRALIA_UNIVERSAL"]}`). That
+        clears #1885183 on its ads. Ask the human to close any ad open in Ads
+        Manager first, and not to edit the ads: an ad-level save drops the
+        headline, description and extra images.
      7. Read the draft back with `ads_get_ad_entities` (`object_state=draft`),
         save it to a file and run `node scripts/check-meta-drafts.mjs --drafts
         <file> --manifest <manifest> --store-url <url>`. Fix every FAIL before
