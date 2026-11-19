@@ -6,7 +6,7 @@
 // EU or UK, so for other markets a scraper of the public library is the practical
 // route. Nothing is spent without --confirm, and no flag can go past the owner's
 // per-run ceiling (APIFY_MAX_USD, default 5).
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
@@ -27,8 +27,10 @@ try {
     options: {
       keyword: { type: 'string', multiple: true },
       page: { type: 'string', multiple: true },
+      competitors: { type: 'string' },
+      'per-search': { type: 'string' },
       country: { type: 'string', default: 'US' },
-      'max-items': { type: 'string', default: String(DEFAULT_ITEMS) },
+      'max-items': { type: 'string' },
       'max-usd': { type: 'string' },
       'price-per-ad': { type: 'string', default: String(DEFAULT_PRICE_PER_AD) },
       'wait-minutes': { type: 'string', default: '20' },
@@ -56,7 +58,8 @@ try {
 
 async function research() {
   const urls = searchUrls();
-  const maxItems = positiveInteger(options['max-items'], '--max-items');
+  const perSearch = options['per-search'] ? positiveInteger(options['per-search'], '--per-search') : null;
+  const maxItems = options['max-items'] ? positiveInteger(options['max-items'], '--max-items') : perSearch ? perSearch * urls.length : DEFAULT_ITEMS;
   const pricePerAd = positiveNumber(options['price-per-ad'], '--price-per-ad');
   const ceiling = spendCeiling();
   const estimate = round(maxItems * pricePerAd);
@@ -125,13 +128,31 @@ async function check() {
 }
 
 function searchUrls() {
-  const urls = (options.keyword ?? []).map((q) => `${LIBRARY}?${new URLSearchParams({ active_status: 'active', ad_type: 'all', country: options.country, q, search_type: 'keyword_unordered', media_type: 'all' })}`);
-  for (const page of options.page ?? []) {
+  const list = options.competitors ? readCompetitors(options.competitors) : { pages: [], keywords: [] };
+  options.page = [...list.pages, ...(options.page ?? [])];
+  options.keyword = [...list.keywords, ...(options.keyword ?? [])];
+  if (list.country && !process.argv.some((arg) => arg === '--country' || arg.startsWith('--country='))) options.country = list.country;
+  const urls = [...new Set(options.keyword)].map((q) => `${LIBRARY}?${new URLSearchParams({ active_status: 'active', ad_type: 'all', country: options.country, q, search_type: 'keyword_unordered', media_type: 'all' })}`);
+  for (const page of new Set(options.page)) {
     if (!/^https:\/\/(www\.)?facebook\.com\//i.test(page)) fail(`--page must be a https://www.facebook.com/ link: ${page}`);
     urls.push(page);
   }
   if (!urls.length) fail('give at least one --keyword or --page');
   return urls;
+}
+
+// competitors.json: { "country": "AU", "keywords": [...], "competitors": [{ "name", "page", "type", "why" }] }
+function readCompetitors(file) {
+  let data;
+  try {
+    data = JSON.parse(readFileSync(file, 'utf8').replace(/^\ufeff/, ''));
+  } catch (error) {
+    fail(`--competitors could not be read as JSON: ${error.message}`);
+  }
+  const entries = Array.isArray(data?.competitors) ? data.competitors : [];
+  const missing = entries.filter((entry) => !entry?.page).map((entry) => entry?.name ?? '?');
+  if (missing.length) console.log(`Skipped ${missing.length} competitors with no Facebook Page link: ${missing.join(', ')}. Find their Page, or search the Ad Library by hand.`);
+  return { country: typeof data?.country === 'string' ? data.country : null, pages: entries.filter((entry) => entry?.page).map((entry) => entry.page), keywords: Array.isArray(data?.keywords) ? data.keywords : [] };
 }
 
 async function call(token, method, route, body) {
@@ -211,8 +232,10 @@ prints the estimate. Needs APIFY_TOKEN in the environment.
 Options:
   --keyword <words>     Ad Library keyword search (repeatable)
   --page <url>          A competitor's Facebook Page link (repeatable)
+  --competitors <file>  competitors.json: pages, keywords and country in one list
+  --per-search <n>      Ads per page or keyword; sets --max-items to n x searches
   --country <code>      Country the ads are delivered in (default US)
-  --max-items <n>       Most ads to pull (default ${DEFAULT_ITEMS}; more needs --allow-larger)
+  --max-items <n>       Most ads to pull in total (default ${DEFAULT_ITEMS}; more needs --allow-larger)
   --max-usd <usd>       Cap for this run (default: estimate + 20%, within the ceiling)
   --price-per-ad <usd>  Override the per-ad price (default ${DEFAULT_PRICE_PER_AD})
   --wait-minutes <n>    Abort the run after this long (default 20)
