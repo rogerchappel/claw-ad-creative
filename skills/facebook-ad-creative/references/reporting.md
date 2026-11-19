@@ -56,6 +56,22 @@ Every cut, scale or budget change is a proposal marked `NEEDS APPROVAL`. Don't
 judge with less than 3 days of data. For matrix tests, `npm run creative:score`
 does the pooled comparison.
 
+## Testing Short Against Long Copy
+
+- Put the long versions in their own ad set: same images, headlines, audience,
+  placements, dates and budget as the short ad set. The copy is the only
+  difference.
+- Don't use Meta's multiple text options or dynamic creative for this. Meta
+  mixes the variants itself and reports no fair comparison.
+- Don't add it to a test that is already comparing something else (hooks,
+  formats); two changes at once can't be read.
+- Read both the result and the engagement over the same dates: cost per
+  result, plus comments, shares, reactions and outbound CTR. Long copy often
+  wins on engagement even when cost per result is close; say which one the
+  person is optimising for before calling a winner.
+- At small budgets this takes about two weeks. Report "no clear difference"
+  when that's the honest read.
+
 ## Check Against The Backend
 
 Meta's numbers are what Meta attributes. Compare reported conversions with the
