@@ -258,7 +258,8 @@ if (!RUN && !VALIDATE) {
     }
   }
   if (problems.length) console.log(`Fix before --run:\n${problems.map((problem) => `  - ${problem}`).join('\n')}`);
-  process.exit(0);
+  if (problems.length && PREVIEW) process.exitCode = 1;
+  process.exit(PREVIEW && problems.length ? 1 : 0);
 }
 
 if (problems.length) fail(`fix these first:\n${problems.map((problem) => `  - ${problem}`).join('\n')}`);
