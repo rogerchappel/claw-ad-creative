@@ -167,6 +167,51 @@ Style: [UGC/demo/cinematic/screen-recording hybrid].
 No logos, no competitor assets, no unreadable text.
 ```
 
+## Meta Video Placements
+
+Every Meta video ad ships as two cuts from the same edit. Do this by default,
+not when asked:
+
+- **9:16 (1080×1920)** for Stories and Reels.
+- **4:5 (1080×1350)** for Feed, laid out for 4:5, not cropped from the 9:16.
+  Mobile Feed masks anything taller than 4:5 ("This image will be masked on
+  mobile News Feed"); a crop cuts the top off phone mock-ups and pushes the
+  headline against the frame. Static images follow the same rule: a 9:16 image
+  needs a 4:5 (or 1:1) partner for Feed.
+
+Assign each cut to its placements with placement asset customisation.
+
+**9:16 safe zone.** Keep every piece of text (hook lines, captions, end-card
+words) between 14% from the top and 65% of the way down (y 269–1248 at
+1920). Reels puts its caption, account name and Install bar over the bottom
+third and its header over the top. Caption chips at the usual 70–75% are partly
+covered, so place them higher.
+
+**Captions never cover the demo.** When a phone or screen recording is on
+screen, size and place it so the captions sit beside it, usually just under it,
+inside the safe zone. Never put them over the part of the screen being tapped.
+
+**4:5 layout.** Text at least 5% in from every edge; device mock-ups fully in
+frame, top edge included; the end card re-laid out (text up, devices smaller
+underneath), not scaled.
+
+**Length.** Hook-test cuts are 15 s or under. Check the file's container
+duration, not only the edit: an audio tail past the last frame counts, so trim
+the audio to the video length.
+
+**First frame.** Hook text is fully on screen by 0.5 s (ideally from frame 0).
+That frame is what shows before autoplay and is the default cover.
+
+**Generated footage.** Before a clip goes in an ad, look at frames from its
+first 2 s and through the rest. Count legs and hooves, check hands, and check
+tack and leads are attached. Image-to-video often grows extra limbs on walking
+animals; a standing animal with small movements (ears, head, tail) holds up far
+better. Replace a bad shot; don't hide it under text.
+
+**Cuts.** Scan the final render for one-frame flashes at scene changes (a
+per-frame brightness jump that reverses on the next frame), and fix them in
+the renderer, not by nudging scene times.
+
 ## Variants
 
 Generate variants deliberately:
