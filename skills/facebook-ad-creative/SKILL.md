@@ -74,9 +74,13 @@ goes to research first; a request to scale with under 3 days of data stops.
    research board.
 5. **Assets.** Static briefs and short video scripts, then render
    (`creative:render`, `creative:package`) or generate with an approved spend
-   cap. Read `references/asset-generation.md`.
+   cap. Read `references/asset-generation.md`. Every video ships as a 9:16
+   and a 4:5 cut, with text inside the 9:16 safe zone (see "Meta Video
+   Placements" there).
 6. **Pre-launch check.** PASS/FIX each ad against the checklist in
-   `references/creative-strategy.md` and `references/compliance.md`.
+   `references/creative-strategy.md` and `references/compliance.md`, and each
+   video against "Meta Video Placements": both ratios, safe zone, length,
+   first frame, footage anatomy, no flashes at cuts.
 7. **Approval pack.** Ad sets, names, copy, budget maths, dates, all marked
    `NEEDS APPROVAL`.
 8. **Build paused.** Only on approval, create drafts or paused ads through the
