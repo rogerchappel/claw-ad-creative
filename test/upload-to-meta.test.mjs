@@ -74,6 +74,19 @@ test('--preview explicitly prints without calling Meta or writing state', async 
   await assert.rejects(readFile(path.join(root, 'upload.state.json')));
 });
 
+test('--preview reports all invalid config and manifest problems with failure without side effects', async () => {
+  const root = await setup({ pageId: 'REPLACE_PAGE', dailyBudgetCents: 0, countries: [], copy: 'invalid' });
+  await writeFile(path.join(root, 'manifest.json'), JSON.stringify({ creatives: [{ id: 'missing-image', primaryText: '' }] }));
+  const result = upload(root, ['--preview']);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /Fix before --run:/);
+  for (const problem of ['set "pageId"', 'dailyBudgetCents', 'countries', 'copy', 'missing image', 'no primary text']) {
+    assert.ok(result.stdout.includes(problem), `preview should report ${problem}`);
+  }
+  await assert.rejects(readFile(path.join(root, 'calls.log')));
+  await assert.rejects(readFile(path.join(root, 'upload.state.json')));
+});
+
 test('rejects conflicting modes and missing config path', () => {
   const conflicting = spawnSync(process.execPath, ['scripts/upload-to-meta.mjs', '--config', 'config.json', '--preview', '--run'], { encoding: 'utf8' });
   assert.equal(conflicting.status, 1);
