@@ -34,7 +34,7 @@ for (const [id, creative] of expected) {
     continue;
   }
   const problems = checkAd(ad, creative);
-  if (!problems.some((problem) => problem.level === 'FAIL')) results.push({ id, level: 'PASS', message: 'copy, link, button and errors all match' });
+  if (!problems.some((problem) => problem.level === 'FAIL' || problem.message.startsWith('reuses'))) results.push({ id, level: 'PASS', message: 'copy, link, button and errors all match' });
   results.push(...problems.map((problem) => ({ id, ...problem })));
 }
 for (const name of ads.keys()) {
@@ -55,6 +55,12 @@ function checkAd(ad, creative) {
   for (const error of ad.errors) {
     problems.push({ level: 'FAIL', message: `Meta error #${error.error_code ?? '?'}: ${error.error_summary ?? error.error_description ?? 'unknown'}` });
   }
+  // A reused creative keeps the store listing and identity of the campaign it was
+  // made for; under a new iOS 14+ campaign Ads Manager shows Identity broken.
+  if (ad.creative && !ad.creative.object_story_spec && !ad.creative.asset_feed_spec) {
+    problems.push({ level: 'WARN', message: `reuses creative ${ad.creative.creative_id ?? ad.creative.id ?? '(unknown id)'}, so copy was not checked; if it was made for another campaign, replace it with a fresh inline creative or Ads Manager may show Identity errors (Instagram empty, app store "Unknown")` });
+    return problems;
+  }
   const text = options.copy === 'long' && creative.primaryTextLong ? creative.primaryTextLong : creative.primaryText;
   const fields = creativeFields(ad.creative);
   failIf(text && !fields.texts.includes(text), describe('primary text', fields.texts, text));
@@ -74,6 +80,9 @@ function checkAdSet({ name, targeting }) {
   const problems = [];
   if ((targeting.user_os ?? []).some((os) => /to_14\.4$/.test(os))) {
     problems.push({ id: name, level: 'FAIL', message: 'targets iOS 14.4 and earlier only; rebuild under a campaign marked iOS 14+ (is_skadnetwork_attribution, or campaign_attribution AEM)' });
+  }
+  if (targeting.age_min === undefined) {
+    problems.push({ id: name, level: 'FAIL', message: 'no age set; set targeting.age_min (18, and at most 25 with an Advantage+ audience) or Ads Manager blocks publishing with errors #1487842/#1487843' });
   }
   const platforms = targeting.publisher_platforms;
   if (!platforms || platforms.includes('audience_network')) {
@@ -177,6 +186,7 @@ Usage:
 
 Fails on a missing ad, a Meta error, or missing or changed primary text,
 headline, description, button or link, and on ad sets that only reach iOS 14.4
-and earlier. Warns on ads with one image, ads that are not in the manifest and
-ad sets that include Audience Network.`);
+and earlier or have no age set. Warns on ads with one image, ads that reuse an
+existing creative, ads that are not in the manifest and ad sets that include
+Audience Network.`);
 }
