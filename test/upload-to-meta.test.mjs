@@ -59,7 +59,8 @@ test('dry run prints paused commands and calls nothing', async () => {
   assert.match(result.stdout, /2 ad sets, 3 ads, all PAUSED/);
   assert.match(result.stdout, /--objective OUTCOME_APP_PROMOTION --status PAUSED/);
   assert.match(result.stdout, /--optimization-goal APP_INSTALLS/);
-  assert.match(result.stdout, /"user_os":\["iOS"\]/);
+  assert.match(result.stdout, /"user_os":\["iOS"\],"publisher_platforms":\["facebook","instagram"\]/);
+  assert.match(result.stdout, /--skadnetwork-attribution/);
   assert.match(result.stdout, /Skipped 1 carousel/);
   await assert.rejects(readFile(path.join(root, 'calls.log')));
 });
@@ -132,4 +133,11 @@ test('rejects unknown options', () => {
   const result = spawnSync(process.execPath, ['scripts/upload-to-meta.mjs', '--publish'], { encoding: 'utf8' });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /unknown option --publish/);
+});
+
+test('refuses an iOS campaign that is not marked iOS 14+', async () => {
+  const root = await setup({ skadnetworkAttribution: false });
+  const result = upload(root, ['--preview']);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /"skadnetworkAttribution" must be true for iOS/);
 });

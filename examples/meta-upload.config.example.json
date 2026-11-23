@@ -14,7 +14,8 @@
   "endTime": "2030-01-14T00:00:00+00:00",
   "countries": ["US"],
   "os": "iOS",
-  "skadnetworkAttribution": false,
+  "skadnetworkAttribution": true,
+  "audienceNetwork": false,
 
   "imageSize": "4x5_1080x1350",
   "callToAction": "INSTALL_MOBILE_APP",

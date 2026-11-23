@@ -52,7 +52,9 @@ Config (JSON; paths are relative to the config file):
   copy              "short" or "long" primary text (default "short")
   optimizationGoal  default "APP_INSTALLS"
   customEventType   app event for OFFSITE_CONVERSIONS, for example "PURCHASE"
-  skadnetworkAttribution  true to pass --skadnetwork-attribution
+  skadnetworkAttribution  marks the campaign iOS 14+ (default true; required for iOS)
+  audienceNetwork   true to also run on Audience Network (default false:
+                    Facebook and Instagram only)
 
 Created IDs are saved beside the config as <name>.state.json, so a run that
 stops can be started again without making duplicates. Carousels are skipped.
@@ -83,6 +85,8 @@ const cfg = {
   imageSize: '4x5_1080x1350',
   callToAction: 'INSTALL_MOBILE_APP',
   copy: 'short',
+  skadnetworkAttribution: true,
+  audienceNetwork: false,
   optimizationGoal: 'APP_INSTALLS',
   ...readJson(configPath, '--config')
 };
@@ -109,6 +113,10 @@ if (!Array.isArray(cfg.countries) || cfg.countries.length === 0) {
 if (!['short', 'long'].includes(cfg.copy)) problems.push('"copy" must be "short" or "long"');
 if (cfg.optimizationGoal === 'OFFSITE_CONVERSIONS' && !cfg.customEventType) {
   problems.push('"customEventType" is required when optimizationGoal is OFFSITE_CONVERSIONS');
+}
+// A campaign not marked iOS 14+ only reaches iOS 14.4 and earlier, which is almost nobody.
+if (/^ios/i.test(cfg.os) && cfg.skadnetworkAttribution !== true) {
+  problems.push('"skadnetworkAttribution" must be true for iOS: without it Meta delivers only to iOS 14.4 and earlier');
 }
 if (!cfg.manifest) fail(problems.join('\n  '));
 
@@ -144,7 +152,9 @@ for (const ad of ads.values()) {
 
 // ---- The commands -----------------------------------------------------------
 
-const targeting = JSON.stringify({ geo_locations: { countries: cfg.countries }, user_os: [cfg.os] });
+// Audience Network is off by default: in-app placements buy cheap accidental taps that rarely install.
+const placements = cfg.audienceNetwork ? {} : { publisher_platforms: ['facebook', 'instagram'] };
+const targeting = JSON.stringify({ geo_locations: { countries: cfg.countries }, user_os: [cfg.os], ...placements });
 const promotedObject = JSON.stringify({
   application_id: String(cfg.appId),
   object_store_url: cfg.appStoreUrl,

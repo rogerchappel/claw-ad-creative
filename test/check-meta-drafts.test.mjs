@@ -78,3 +78,17 @@ test('rejects unknown options and unreadable input', () => {
   assert.equal(missing.status, 1);
   assert.match(missing.stderr, /could not be read as JSON/);
 });
+
+test('fails an ad set limited to old iOS and warns on Audience Network', async () => {
+  const adSet = (name, targeting) => ({ ad_object_type: 'adset', values: { name: { new: name }, targeting: { new: targeting } } });
+  const ads = [draftAd('h1-status', fullLink('h1-status')), draftAd('h1-card', fullLink('h1-card'))];
+  const result = await run([
+    ...ads,
+    adSet('old-ios', { user_os: ['iOS_ver_2.0_to_14.4'] }),
+    adSet('fb-ig', { user_os: ['iOS_ver_14.0_and_above'], publisher_platforms: ['facebook', 'instagram'] })
+  ]);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /FAIL: old-ios: targets iOS 14.4 and earlier only/);
+  assert.match(result.stdout, /WARN: old-ios: Audience Network is included/);
+  assert.doesNotMatch(result.stdout, /fb-ig/);
+});
