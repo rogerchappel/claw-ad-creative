@@ -39,8 +39,10 @@ with the account's own averages and compare against those.
 
 Read on a schedule, not whenever someone looks:
 
-- **Day 1: delivery only.** Is every ad spending? Any rejections? No verdicts;
-  early numbers swing.
+- **Day 1: delivery only.** Is every ad spending? Any rejections? Where is the
+  money going: break spend down by placement, and flag any placement taking
+  most of the budget with a click-through rate far above 1% (usually Audience
+  Network). No verdicts on ads; early numbers swing.
 - **Day 3: cut clear losers.** Propose cutting ads that spent about 2x the
   target cost per result with no result, or whose hook rate is far below the
   ad set's average. Everything else keeps running.

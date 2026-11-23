@@ -93,7 +93,10 @@ after its folder. The scorer matches on ad names.
 Before anything is switched on, a human checks in Ads Manager:
 
 - each ad's destination is the App Store and the button reads Install,
-- budget, dates, countries and placements on every ad set,
+- budget, dates, countries and placements on every ad set (Facebook and
+  Instagram; Audience Network off unless you chose it),
+- for iOS, each campaign is an iOS 14+ campaign, and no ad set is limited to
+  iOS 14.4 and earlier,
 - every ad set has an end date,
 - installs are showing in Events Manager.
 

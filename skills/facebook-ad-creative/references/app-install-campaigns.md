@@ -39,11 +39,24 @@ Never ask for a token in chat, print one, or search the machine for one.
 
 | Level | Setting |
 |---|---|
-| Campaign | Objective app promotion (`OUTCOME_APP_PROMOTION`), ad set budgets |
+| Campaign | Objective app promotion (`OUTCOME_APP_PROMOTION`), ad set budgets. For iOS, mark it iOS 14+ at creation: `is_skadnetwork_attribution: true` with the App Store app in the campaign's `promoted_object`, or `campaign_attribution: "AEM"` on each ad set |
 | Ad set | One per hook. Goal `APP_INSTALLS`, billed on impressions, lowest cost, same audience, dates and budget in every ad set, end date set |
 | Promoted object | `application_id` (Meta app ID) and `object_store_url` (App Store URL) |
 | Targeting | Countries plus `user_os: ["iOS"]`; broad otherwise |
+| Placements | `publisher_platforms: ["facebook", "instagram"]`. Leave Audience Network out unless the human chooses it |
 | Ad | 2 or 3 layouts per hook, identical across ad sets. Same button, headline and offer everywhere |
+
+Two settings fail quietly, so check them on every build:
+
+- **iOS 14+.** An iOS campaign that isn't marked iOS 14+ is built without
+  complaint, but Meta then delivers it only to iOS 14.4 and earlier, which is
+  almost nobody. The ad set reads back with `user_os:
+  ["iOS_ver_2.0_to_14.4"]`. The flag can't be added later; build a new campaign.
+- **Audience Network.** Advantage+ placements include it. For an install goal
+  with little data, Meta spends there first because it's cheap, and the clicks
+  are mostly accidental taps in other apps' games and rewarded videos: very
+  high click-through, almost no installs. Exclude it by listing
+  `publisher_platforms` without it.
 
 Budget: aim for about 50 installs per ad set per week. With a small budget run
 3 ad sets, not 10. Say what the budget can and can't detect before it runs.
@@ -66,8 +79,10 @@ frequent. Value optimisation through the API is allow-list only.
      1. `ads_get_ad_accounts`, `ads_get_ad_account_pages`, `ads_get_ig_accounts`.
         If the brand's Instagram account isn't listed, ask the human to link it
         to the Page and ad account before building ads.
-     2. `ads_create_campaign` and `ads_create_ad_set`, then stage
-        `{"status":"PAUSED"}` on each campaign with `ads_update_entity`.
+     2. `ads_create_campaign` (for iOS with `is_skadnetwork_attribution` and
+        the app in `promoted_object`) and `ads_create_ad_set` with the
+        placements above, then stage `{"status":"PAUSED"}` on each campaign
+        with `ads_update_entity`.
      3. Ask the human to upload every image size through the Ads Manager image
         picker (**Upload**, Account tab). Find them with `ads_get_ad_images` by
         file name.
@@ -82,8 +97,9 @@ frequent. Value optimisation through the API is allow-list only.
         an ad-level save drops the headline, description and extra images.
      7. Read the draft back with `ads_get_ad_entities` (`object_state=draft`),
         save it to a file and run `node scripts/check-meta-drafts.mjs --drafts
-        <file> --manifest <manifest> --store-url <url>`. Fix every FAIL before
-        reporting the ads as ready.
+        <file> --manifest <manifest> --store-url <url>`. It also fails ad sets
+        limited to old iOS and warns on Audience Network. Fix every FAIL
+        before reporting the ads as ready.
 4. Report what was created, with names and IDs, the check result, and what
    still needs doing by hand (carousels).
 5. The human publishes and activates, or tells you to (`ads_activate_entity`).
@@ -103,8 +119,16 @@ far, anything broken. Recommend no changes unless:
 - an ad is rejected,
 - an ad set has spent nothing after 48 hours,
 - spend is running over budget,
-- clicks are normal but installs are zero after 2 days (tracking fault),
+- clicks are normal but installs are zero after 2 days: check placements and
+  the iOS 14+ flag before blaming tracking (see below),
 - an ad is drawing harmful comments.
+
+On day 1 or 2, also break spend down by placement (`publisher_platform` and
+`platform_position` breakdowns). If Audience Network has most of the spend, or
+any placement shows a click-through rate above about 10%, the clicks are not
+real interest: propose removing that placement before reading any ad. Compare
+link clicks with App Store product page views from "App Referrer" in App Store
+Connect; a large gap means the clicks never reached the store.
 
 Don't call a winner early. iOS install numbers are delayed and modelled.
 
