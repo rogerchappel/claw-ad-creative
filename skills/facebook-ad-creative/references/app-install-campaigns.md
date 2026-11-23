@@ -13,7 +13,10 @@ Ask or check, in this order. Stop at the first "no" and help with that.
 2. Is there a Meta app (developers.facebook.com/apps) with the iOS app added
    and the ad account authorised on it?
 3. Does the App Store build report installs to Meta (Facebook SDK, a
-   measurement partner, or the Conversions API)?
+   measurement partner, or the Conversions API)? For iOS, does its
+   `Info.plist` list Meta's SKAdNetwork IDs (`v9wttpbfk9.skadnetwork` and
+   `n38lu8286q.skadnetwork` under `SKAdNetworkItems`)? Without them installs
+   from people who decline tracking aren't credited to the ads.
 4. Do installs show in Events Manager?
 5. Can you reach the ad account (Meta ads MCP server or the `meta` CLI)?
 
