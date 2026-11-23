@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- iOS install campaigns are now built as iOS 14+ campaigns and run on Facebook
+  and Instagram only by default. `creative:upload` refuses an iOS config without
+  `skadnetworkAttribution`, and `check-meta-drafts` fails ad sets limited to
+  iOS 14.4 and earlier and warns on Audience Network. The skill reads spend by
+  placement on day 1.
+
 - Added a cold-traffic copy brief to the skill: four jobs before the product,
   17 questions to answer before writing, market to segment to buyer targeting,
   writing from a reference ad's structure, and bet sizing per concept. Added
