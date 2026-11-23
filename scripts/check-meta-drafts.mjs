@@ -41,6 +41,8 @@ for (const name of ads.keys()) {
   if (!expected.has(name)) results.push({ id: name, level: 'WARN', message: 'ad is in the draft but not in the manifest; delete it if it was a throwaway' });
 }
 
+for (const adSet of draftAdSets(drafts)) results.push(...checkAdSet(adSet));
+
 for (const { id, level, message } of results) console.log(`${level}: ${id}: ${message}`);
 const failures = results.filter((result) => result.level === 'FAIL').length;
 const warnings = results.filter((result) => result.level === 'WARN').length;
@@ -64,6 +66,22 @@ function checkAd(ad, creative) {
   return problems;
 }
 
+// Ad set targeting: an iOS campaign not marked iOS 14+ reads back as user_os
+// "iOS_ver_2.0_to_14.4" and reaches almost nobody; Advantage+ placements include
+// Audience Network unless publisher_platforms says otherwise.
+function checkAdSet({ name, targeting }) {
+  if (!targeting) return [];
+  const problems = [];
+  if ((targeting.user_os ?? []).some((os) => /to_14\.4$/.test(os))) {
+    problems.push({ id: name, level: 'FAIL', message: 'targets iOS 14.4 and earlier only; rebuild under a campaign marked iOS 14+ (is_skadnetwork_attribution, or campaign_attribution AEM)' });
+  }
+  const platforms = targeting.publisher_platforms;
+  if (!platforms || platforms.includes('audience_network')) {
+    problems.push({ id: name, level: 'WARN', message: 'Audience Network is included; set publisher_platforms without it unless the human chose it' });
+  }
+  return problems;
+}
+
 function describe(label, found, wanted) {
   return found.length === 0 ? `${label} is missing; re-enter "${wanted}"` : `${label} is "${found[0]}", expected "${wanted}"`;
 }
@@ -83,9 +101,25 @@ function creativeFields(creative = {}) {
   };
 }
 
+function draftAdSets(input) {
+  return draftItems(input)
+    .filter((item) => item?.ad_object_type === 'adset')
+    .map((item) => ({ name: item.values?.name?.new ?? item.ad_object_id, targeting: item.values?.targeting?.new }));
+}
+
 // Accepts the raw ads_get_ad_entities result (ad_drafts may be a JSON string)
 // or a plain array of draft objects.
 function draftAds(input) {
+  return draftItems(input)
+    .filter((item) => item?.ad_object_type === 'ad')
+    .map((item) => ({
+      name: item.values?.name?.new ?? item.ad_object_id,
+      creative: item.values?.creative?.new,
+      errors: Array.isArray(item.active_errors) ? item.active_errors : []
+    }));
+}
+
+function draftItems(input) {
   let list = Array.isArray(input) ? input : input?.ad_drafts;
   if (typeof list === 'string') {
     try {
@@ -95,13 +129,7 @@ function draftAds(input) {
     }
   }
   if (!Array.isArray(list)) fail('--drafts must be an ads_get_ad_entities draft result or an array of draft objects');
-  return list
-    .filter((item) => item?.ad_object_type === 'ad')
-    .map((item) => ({
-      name: item.values?.name?.new ?? item.ad_object_id,
-      creative: item.values?.creative?.new,
-      errors: Array.isArray(item.active_errors) ? item.active_errors : []
-    }));
+  return list;
 }
 
 function readJson(file, flag) {
@@ -148,6 +176,7 @@ Usage:
   --copy       short (default) or long primary text
 
 Fails on a missing ad, a Meta error, or missing or changed primary text,
-headline, description, button or link. Warns on ads with one image and on ads
-that are not in the manifest.`);
+headline, description, button or link, and on ad sets that only reach iOS 14.4
+and earlier. Warns on ads with one image, ads that are not in the manifest and
+ad sets that include Audience Network.`);
 }
