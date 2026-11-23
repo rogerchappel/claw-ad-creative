@@ -15,7 +15,12 @@ server leaves on every ad. Don't edit the ads themselves.
 1. The agent checks the ad account, Page and Instagram account. If the brand's
    Instagram account isn't linked to the ad account, link it first (see
    "Instagram account is missing" below).
-2. The agent creates the campaigns and ad sets as paused drafts.
+2. The agent creates the campaigns and ad sets as paused drafts. For an iOS
+   app, each campaign is created as an iOS 14+ campaign
+   (`is_skadnetwork_attribution: true` and the app in the campaign's
+   `promoted_object`), and each ad set lists `publisher_platforms` without
+   Audience Network. Neither can be skipped: see "Campaign only reaches old
+   iPhones" below.
 3. A human uploads every image size into the ad account (see "Getting images
    into the ad account").
 4. The agent creates each ad with the primary text, headline, description, App
@@ -184,6 +189,25 @@ local MD5. Match on names.
 - **Advantage+ audience** is turned on by default for new ad sets. With only
   countries and OS set, that is still broad targeting.
 
+## Campaign only reaches old iPhones
+
+An iOS app campaign created without the iOS 14+ setting is accepted with no
+error and no warning. Meta then shows it only to iPhones on iOS 14.4 or
+earlier, which in practice is almost nobody. Signs:
+
+- In Ads Manager, the ad set's **Mobile app store** reads "Apple App Store (iOS
+  13.7 or earlier)" and is greyed out, and **Attribution model** reads
+  "Standard" instead of SKAdNetwork or AEM.
+- Through the API, the ad set's targeting reads back `user_os:
+  ["iOS_ver_2.0_to_14.4"]`.
+- Facebook and Instagram barely deliver, spend drifts to Audience Network, and
+  installs stay at zero while the Facebook SDK reports installs from other
+  sources.
+
+It can't be fixed in place: the setting exists only at creation. Build new
+campaigns with it on, copy the ad sets and ads across, then turn the old
+campaigns off (don't delete them, so their numbers stay).
+
 ## Checks before handing over
 
 - Read the draft back with `ads_get_ad_entities` (`object_state=draft`), save it
@@ -196,5 +220,7 @@ local MD5. Match on names.
   It fails on a missing ad, any Meta error, and a missing or changed primary
   text, headline, description, button or link. It warns on single-image ads and
   on ads that aren't in the manifest (a throwaway ad left behind, for example).
+- For iOS: no ad set reads back `iOS_ver_2.0_to_14.4` (the check above fails
+  on it), and no ad set includes Audience Network unless the human chose it.
 - Both campaigns staged `PAUSED`.
 - A preview link for each ad, checked by a human.
