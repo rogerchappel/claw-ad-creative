@@ -84,7 +84,12 @@ goes to research first; a request to scale with under 3 days of data stops.
 7. **Approval pack.** Ad sets, names, copy, budget maths, dates, all marked
    `NEEDS APPROVAL`.
 8. **Build paused.** Only on approval, create drafts or paused ads through the
-   Meta ads MCP server or `creative:upload`. The human activates.
+   Meta ads MCP server or `creative:upload`. For an iOS app, every campaign is
+   created as an iOS 14+ campaign; without it Meta shows the ads only to iOS
+   14.4 and earlier, and the setting can't be added later. Placements are
+   Facebook and Instagram unless the human chooses Audience Network. Read the
+   ad sets back and run `check-meta-drafts` before handing over. The human
+   activates.
 9. **Read results.** Day 1 delivery, day 3 cuts, day 7 scale, weekly report,
    checked against the backend. Read `references/reporting.md`.
 
