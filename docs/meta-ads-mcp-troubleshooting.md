@@ -208,6 +208,16 @@ It can't be fixed in place: the setting exists only at creation. Build new
 campaigns with it on, copy the ad sets and ads across, then turn the old
 campaigns off (don't delete them, so their numbers stay).
 
+When copying the ads across, give each one a fresh inline creative (page,
+Instagram account and App Store link). Don't point the new ads at the old
+`creative_id`s: those creatives carry the old campaign's store listing, so Ads
+Manager marks every ad "Fix error" with Identity showing no Instagram account
+and the app store as "Unknown", while the API reports no errors.
+
+Also set an age on every rebuilt ad set (`age_min` 18; with an Advantage+
+audience it must be 25 or lower). Without one, Ads Manager blocks publishing
+with errors #1487842 and #1487843, which the API doesn't report either.
+
 ## Checks before handing over
 
 - Read the draft back with `ads_get_ad_entities` (`object_state=draft`), save it
@@ -220,6 +230,8 @@ campaigns off (don't delete them, so their numbers stay).
   It fails on a missing ad, any Meta error, and a missing or changed primary
   text, headline, description, button or link. It warns on single-image ads and
   on ads that aren't in the manifest (a throwaway ad left behind, for example).
+- Every ad set has an age set (the check fails without one), and every ad has
+  its own inline creative (the check warns on a reused `creative_id`).
 - For iOS: no ad set reads back `iOS_ver_2.0_to_14.4` (the check above fails
   on it), and no ad set includes Audience Network unless the human chose it.
 - Both campaigns staged `PAUSED`.

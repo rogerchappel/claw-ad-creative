@@ -85,10 +85,26 @@ test('fails an ad set limited to old iOS and warns on Audience Network', async (
   const result = await run([
     ...ads,
     adSet('old-ios', { user_os: ['iOS_ver_2.0_to_14.4'] }),
-    adSet('fb-ig', { user_os: ['iOS_ver_14.0_and_above'], publisher_platforms: ['facebook', 'instagram'] })
+    adSet('fb-ig', { user_os: ['iOS_ver_14.0_and_above'], publisher_platforms: ['facebook', 'instagram'], age_min: 18 })
   ]);
   assert.equal(result.status, 1);
   assert.match(result.stdout, /FAIL: old-ios: targets iOS 14.4 and earlier only/);
   assert.match(result.stdout, /WARN: old-ios: Audience Network is included/);
   assert.doesNotMatch(result.stdout, /fb-ig/);
+});
+
+test('fails an ad set with no age', async () => {
+  const ads = [draftAd('h1-status', fullLink('h1-status')), draftAd('h1-card', fullLink('h1-card'))];
+  const result = await run([...ads, { ad_object_type: 'adset', values: { name: { new: 'no-age' }, targeting: { new: { publisher_platforms: ['facebook'] } } } }]);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /FAIL: no-age: no age set/);
+});
+
+test('warns on a reused creative instead of failing every field', async () => {
+  const reused = { ad_object_type: 'ad', values: { name: { new: 'h1-card' }, creative: { new: { creative_id: '987' } } }, active_errors: [] };
+  const result = await run([draftAd('h1-status', fullLink('h1-status')), reused]);
+  assert.equal(result.status, 0, result.stdout);
+  assert.match(result.stdout, /WARN: h1-card: reuses creative 987/);
+  assert.doesNotMatch(result.stdout, /h1-card: (headline|primary text) is missing/);
+  assert.doesNotMatch(result.stdout, /PASS: h1-card/);
 });

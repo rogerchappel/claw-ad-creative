@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `check-meta-drafts` fails ad sets with no age set (Ads Manager blocks
+  publishing them with #1487842/#1487843) and warns on ads that reuse an
+  existing creative instead of reporting every field missing. Reused creatives
+  break Identity under a rebuilt iOS 14+ campaign.
+
 - iOS install campaigns are now built as iOS 14+ campaigns and run on Facebook
   and Instagram only by default. `creative:upload` refuses an iOS config without
   `skadnetworkAttribution`, and `check-meta-drafts` fails ad sets limited to

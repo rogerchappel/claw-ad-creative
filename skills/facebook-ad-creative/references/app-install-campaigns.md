@@ -102,7 +102,8 @@ frequent. Value optimisation through the API is allow-list only.
      7. Read the draft back with `ads_get_ad_entities` (`object_state=draft`),
         save it to a file and run `node scripts/check-meta-drafts.mjs --drafts
         <file> --manifest <manifest> --store-url <url>`. It also fails ad sets
-        limited to old iOS and warns on Audience Network. Fix every FAIL
+        limited to old iOS or with no age set, and warns on Audience Network and
+        on ads that reuse an existing creative. Fix every FAIL
         before reporting the ads as ready.
 4. Report what was created, with names and IDs, the check result, and what
    still needs doing by hand (carousels).
