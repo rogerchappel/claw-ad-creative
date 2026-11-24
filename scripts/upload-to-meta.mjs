@@ -259,6 +259,7 @@ console.log('');
 
 if (!RUN && !VALIDATE) {
   console.log(`${PREVIEW ? 'Explicit preview: nothing is being created.' : 'Nothing is being created.'} These are the commands --run would use:\n`);
+  console.log(`Created IDs will be saved beside the config as ${statePath}.\n`);
   show(campaignArgs());
   for (const [name, list] of adSets) {
     show(adSetArgs(name, '<CAMPAIGN_ID>'));
