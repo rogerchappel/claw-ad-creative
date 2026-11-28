@@ -18,7 +18,7 @@ Move quickly, but keep every change reviewable, reversible, verifiable, and safe
 ## Branch Policy
 
 - Work on a branch for all repository changes.
-- Branch from the latest `` before editing.
+- Branch from the latest `main` before editing.
 - Do not merge without explicit maintainer approval.
 - Do not rewrite shared history unless explicitly instructed.
 
